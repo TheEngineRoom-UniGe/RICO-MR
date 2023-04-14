@@ -43,7 +43,13 @@ protected:
 
 public:	
 
-	// Called for spawning new model in the world
+
+	/* Method to spawn new robot model in the world
+	   Args:
+	   - SDFAsset: parsed SDF file structure containing model's description
+	   - ControllerDataAsset: reference to controller asset for spawning appropriate robot controller
+	   - Transform: transformation (in world coordinates) where the model needs to be spawned
+	*/
 	UFUNCTION(BlueprintCallable, Category = "ModelSpawner")
 	ARModel* SpawnModelWithController(UPARAM() USDFDataAsset* SDFAsset, UPARAM() URControllerDataAsset* ControllerDataAsset, UPARAM() FTransform Transform);
 

@@ -2,23 +2,21 @@
 
 
 // Sets default values for this component's properties
-UDynamicModelSpawnerComponent::UDynamicModelSpawnerComponent()
-{
-    ModelBuilder = NewObject<URModelBuilder>(GetOuter());
-    ControllerBuilder = NewObject<URControllerBuilder>(GetOuter());
-}
+UDynamicModelSpawnerComponent::UDynamicModelSpawnerComponent() {}
 
 // Dtor
 UDynamicModelSpawnerComponent::~UDynamicModelSpawnerComponent() {};
 
-// Called when the game starts
 void UDynamicModelSpawnerComponent::BeginPlay()
 {
 	Super::BeginPlay();
+
+    ModelBuilder = NewObject<URModelBuilder>(GetOuter());
+    ControllerBuilder = NewObject<URControllerBuilder>(GetOuter());
+
     GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, ModelBuilder->GetName());
 }
 
-// Called when the game ends
 void UDynamicModelSpawnerComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
     // Set variables to null so that they are collected by GC
@@ -33,14 +31,6 @@ void UDynamicModelSpawnerComponent::EndPlay(const EEndPlayReason::Type EndPlayRe
     Super::EndPlay(EndPlayReason);
 }
 
-//---------------------------------------------
-
-/* Method to spawn new robot model in the world
-*  Params:
-*   - SDFAsset: parsed SDF file structure containing model's description
-*   - ControllerDataAsset: reference to controller asset for spawning appropriate robot controller
-*	- Transform: transformation (in world coordinates) where the model needs to be spawned
-*/
 ARModel* UDynamicModelSpawnerComponent::SpawnModelWithController(UPARAM() USDFDataAsset* SDFAsset, 
     UPARAM() URControllerDataAsset* ControllerDataAsset, UPARAM() FTransform Transform) {
 
