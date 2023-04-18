@@ -44,7 +44,6 @@ ARModel* UDynamicModelSpawnerComponent::SpawnModelWithController(UPARAM() USDFDa
         ModelBuilder->Load(Model, NewRobot, Transform.GetLocation());
         // Set base link to static to avoid model from falling
         auto RobotLinks = NewRobot->GetLinks();
-        //NewRobot->GetLinks()[0]->GetCollision()->SetMobility(EComponentMobility::Stationary);
         
         // -- Add controller --
         // Add controller component to robot model
