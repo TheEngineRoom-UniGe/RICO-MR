@@ -9,17 +9,12 @@ UROSCommunicationComponent::UROSCommunicationComponent()
 void UROSCommunicationComponent::BeginPlay()
 {
 	Super::BeginPlay();
-
-	// Set up ROS Connection
-	Handler = MakeShareable<FROSBridgeHandler>(new FROSBridgeHandler(*ROSBridgeServerIPAddr, ROSBridgeServerPort));
-	Handler->Connect();
-	UE_LOG(LogTemp, Log, TEXT("[UROSCommunicationComponent::BeginPlay()] Websocket server connected."));	
 }
 
 
 void UROSCommunicationComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
-	Handler->Disconnect();
+	//Handler->Disconnect();
 	UE_LOG(LogTemp, Log, TEXT("[UROSCommunicationComponent::EndPlay()] Websocket server disconnected."));
 
 	// Empty array of robots
@@ -36,6 +31,17 @@ void UROSCommunicationComponent::EndPlay(const EEndPlayReason::Type EndPlayReaso
 	}
 
 	Super::EndPlay(EndPlayReason);
+}
+
+
+void UROSCommunicationComponent::ConnectToROS(UPARAM() FString ROSIPAddr) {
+
+	Handler = MakeShareable<FROSBridgeHandler>(new FROSBridgeHandler(*ROSIPAddr, ROSBridgeServerPort));
+	Handler->Connect();
+
+	UE_LOG(LogTemp, Log, TEXT("[UROSCommunicationComponent::BeginPlay()] Websocket server connected."));
+
+	isConnected = true;
 }
 
 
@@ -74,23 +80,25 @@ void UROSCommunicationComponent::TickComponent(float DeltaTime, ELevelTick TickT
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
 	// Process incoming ROS messages...
-	Handler->Process();
+	if (isConnected) {
+		Handler->Process();
 
-	// Check if any subscriber has a pending trajectory to execute...
-	for (auto subscriber : JointTrajectorySubscribers) {
-		if (subscriber->hasPendingTrajectory_) {
-			// Reset boolean flag
-			subscriber->hasPendingTrajectory_ = false;
-			// Add latent action to world, so trajectory can be properly executed
-			int id = FMath::RandRange(1, 1000);
-			GetWorld()->GetLatentActionManager().AddNewAction(this, id, new JointTrajectoryLatentAction(
-				subscriber->jointTrajectoryMsg_->GetPoints(),
-				subscriber->jointTrajectoryMsg_->GetJointNames(),
-				subscriber->robot_,
-				GetWorld()->DeltaTimeSeconds,
-				ROSTrajectoryUpdateFrequency,
-				ROSTrajectoryMaxSteps
-			));
+		// Check if any subscriber has a pending trajectory to execute...
+		for (auto subscriber : JointTrajectorySubscribers) {
+			if (subscriber->hasPendingTrajectory_) {
+				// Reset boolean flag
+				subscriber->hasPendingTrajectory_ = false;
+				// Add latent action to world, so trajectory can be properly executed
+				int id = FMath::RandRange(1, 1000);
+				GetWorld()->GetLatentActionManager().AddNewAction(this, id, new JointTrajectoryLatentAction(
+					subscriber->jointTrajectoryMsg_->GetPoints(),
+					subscriber->jointTrajectoryMsg_->GetJointNames(),
+					subscriber->robot_,
+					GetWorld()->DeltaTimeSeconds,
+					ROSTrajectoryUpdateFrequency,
+					ROSTrajectoryMaxSteps
+				));
+			}
 		}
 	}
 }

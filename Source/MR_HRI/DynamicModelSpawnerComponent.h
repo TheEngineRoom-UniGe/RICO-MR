@@ -8,7 +8,6 @@
 #include "Factory/RModelBuilder.h"
 #include "Factory/RControllerBuilder.h"
 #include "Controller/RControllerDataAsset.h"
-#include <Editor/EditorEngine.h>
 #include "SDF/SDFDataAsset.h"
 #include "DynamicModelSpawnerComponent.generated.h"
 

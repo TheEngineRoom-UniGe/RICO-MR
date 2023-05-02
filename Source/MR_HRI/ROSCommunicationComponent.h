@@ -29,10 +29,6 @@ public:
 	// Array of pointers to robot models
 	TArray<ARModel*> RobotModels;
 
-
-	UPROPERTY(EditAnywhere, Category = "ROS Settings")
-		FString ROSBridgeServerIPAddr;
-
 	UPROPERTY(EditAnywhere, Category = "ROS Settings")
 		uint32 ROSBridgeServerPort;
 
@@ -43,14 +39,25 @@ public:
 		int ROSTrajectoryMaxSteps;
 
 protected:
+
+	// Controls whether or not establishing connection
+	bool isConnected = false;
+
 	// Called when the game starts
 	virtual void BeginPlay() override;
 	// Called when game ends
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
 public:	
+
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+
+
+	// Connect to ROS via the IP specified in the input text field
+	UFUNCTION(BlueprintCallable, Category = "ROS Connection")
+	void ConnectToROS(UPARAM() FString ROSIPAddr);
+
 	// Register new robot on QR detection and expose corresponding topics
 	UFUNCTION(BlueprintCallable, Category = "ModelSpawner")
 	void RegisterNewRobot(UPARAM() ARModel* robot);

@@ -14,7 +14,7 @@ void UDynamicModelSpawnerComponent::BeginPlay()
     ModelBuilder = NewObject<URModelBuilder>(GetOuter());
     ControllerBuilder = NewObject<URControllerBuilder>(GetOuter());
 
-    GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, ModelBuilder->GetName());
+    //GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, ModelBuilder->GetName());
 }
 
 void UDynamicModelSpawnerComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
