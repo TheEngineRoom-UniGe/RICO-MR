@@ -229,7 +229,8 @@ Eigen::VectorXf URobotArm::InverseKinematics(const Eigen::VectorXf& DesiredEEPos
 
 		// Update law based on jacobian pseudoinverse
 		Eigen::MatrixXf J_Pinv = J_T.completeOrthogonalDecomposition().pseudoInverse();
-		Eigen::VectorXf ThetaDot = J_Pinv * K_Alpha * EEPoseDiff;
+		Eigen::MatrixXf Tmp = J_Pinv * K_Alpha;
+		Eigen::VectorXf ThetaDot = Tmp * EEPoseDiff;
 		UpdateJointAngles(0.01 * ThetaDot);
 	}
 
@@ -237,6 +238,7 @@ Eigen::VectorXf URobotArm::InverseKinematics(const Eigen::VectorXf& DesiredEEPos
 	int j = 0;
 	for (auto Link : Links) {
 		TargetJointAngles(j) = Link->Theta_;
+		j++;
 	}
 	return TargetJointAngles;
 
@@ -285,8 +287,113 @@ void UInverseKinematicsComponent::InitFromDHParams(UPARAM() UDataTable* DHParams
 }
 
 
-void UInverseKinematicsComponent::ComputeInverseKinematics(UPARAM() TArray<float> DesiredEEPose, TArray<float>& TargetJointAngles)
+void UInverseKinematicsComponent::ComputeInverseKinematics(UPARAM() const FVector& DesiredEndEffectorEPosition, UPARAM() const FVector& DesiredZAxis,
+	UPARAM() const FVector& DesiredYAxis, TArray<float>& TargetJointAngles)
 {
+	Eigen::VectorXf ZeroVector = Eigen::VectorXf::Zero(RobotArm->NLinks_);
+	RobotArm->SetJointAngles(ZeroVector);
 
+	// rewrite vectors in eigen format, including conversion to right-hand rule
+	Eigen::Vector3f ZAxis;
+	ZAxis(0) = -DesiredZAxis.X;
+	ZAxis(1) = DesiredZAxis.Y;
+	ZAxis(2) = DesiredZAxis.Z;
+
+	Eigen::Vector3f YAxis;
+	YAxis(0) = -DesiredYAxis.X;
+	YAxis(1) = DesiredYAxis.Y;
+	YAxis(2) = DesiredYAxis.Z;
+
+	// Define reference unit vectors
+	Eigen::Vector3f XWorld;
+	XWorld(0) = 1;
+	XWorld(1) = 0;
+	XWorld(2) = 0;
+
+	Eigen::Vector3f YWorld;
+	YWorld(0) = 0;
+	YWorld(1) = 1;
+	YWorld(2) = 0;
+
+	Eigen::Vector3f ZWorld;
+	ZWorld(0) = 0;
+	ZWorld(1) = 0;
+	ZWorld(2) = 1;
+
+	// Compute rotation axis needed to align ZWorld with ZAxis
+	Eigen::Vector3f RotAxis = ZWorld.cross(ZAxis);
+	RotAxis /= RotAxis.norm();
+
+	// Alpha angle is the one between rotation axis and world Y vector
+	float Alpha = FMath::Acos(RotAxis.dot(YWorld));
+	if (Alpha > PI / 2) {
+		Alpha -= PI;
+	}
+	// Find direction of rotation based on cross product and plane normal
+	Eigen::Vector3f C = YWorld.cross(RotAxis);
+	float D = ZWorld.dot(C);
+	if (D < 0) {
+		Alpha = -Alpha;
+	}
+
+	// Beta angle is the one between Z vectors
+	float Beta = FMath::Acos(ZAxis.dot(ZWorld));
+	// Find direction of rotation based on cross product and plane normal
+	Eigen::Vector3f E = XWorld.cross(RotAxis);
+	float F = ZWorld.dot(E);
+	if (F < 0) {
+		Beta = -Beta;
+	}
+
+	// Gamma angle is the one between target Y axis and rotation axis
+	float Gamma = FMath::Acos(YAxis.dot(RotAxis));
+	// Find direction of rotation based on cross product and plane normal
+	Eigen::Vector3f H = YAxis.cross(RotAxis);
+	float M = ZWorld.dot(H);
+	if (M < 0) {
+		Gamma = -Gamma;
+	}
+
+	Eigen::VectorXf DesiredEEPose(6);
+	DesiredEEPose(0) = -DesiredEndEffectorEPosition.X / 100.0f;
+	DesiredEEPose(1) = DesiredEndEffectorEPosition.Y / 100.0f;
+	DesiredEEPose(2) = DesiredEndEffectorEPosition.Z / 100.0f;
+	DesiredEEPose(3) = Alpha;
+	DesiredEEPose(4) = Beta;
+	DesiredEEPose(5) = Gamma;
+
+	UE_LOG(LogTemp, Log, TEXT("Desired End Effector Pose:"));
+	for (int j = 0; j < DesiredEEPose.size(); j++) {
+		UE_LOG(LogTemp, Log, TEXT("%f"), DesiredEEPose(j));
+	}
+	UE_LOG(LogTemp, Log, TEXT("--------"));
+
+	Eigen::VectorXf TargetJointAnglesVector = RobotArm->InverseKinematics(DesiredEEPose, this->MaxIterations);
+
+	auto TEE_0 = RobotArm->TransformationMatrix();
+	Eigen::VectorXf EEPose = RobotArm->ForwardKinematics(TEE_0);
+	UE_LOG(LogTemp, Log, TEXT("End Effector Pose After IK:"));
+	for (int j = 0; j < EEPose.size(); j++) {
+		UE_LOG(LogTemp, Log, TEXT("%f"), EEPose(j));
+	}
+	UE_LOG(LogTemp, Log, TEXT("--------"));
+
+	for (int j = 0; j < TargetJointAnglesVector.size(); j++) {
+		TargetJointAngles.Add(TargetJointAnglesVector(j));
+	}
+
+}
+
+
+void UInverseKinematicsComponent::SetRobotJointState(UPARAM() ARModel* Robot, UPARAM() TArray<float> JointValues)
+{
+	int i = 0;
+	FHitResult Hit;
+	for (auto joint : Robot->GetJoints()) {
+		if (i < JointValues.Num()) {
+			joint->SetJointPosition(JointValues[i], &Hit);
+			i++;
+		}
+	}
 }
 

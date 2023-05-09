@@ -7,6 +7,7 @@
 #include <Eigen/Dense>
 #include <Eigen/QR>
 #include <Engine/DataTable.h>
+#include <Physics/RModel.h>
 #include "InverseKinematicsComponent.generated.h"
 
 
@@ -122,7 +123,7 @@ class MR_HRI_API UInverseKinematicsComponent : public UActorComponent
 
 public:
 
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY(EditAnywhere)
 	int MaxIterations;
 
 	// Reference to RobotArm class
@@ -137,6 +138,11 @@ public:
 
 	// Compute inverse kinematics given desired end effector's coordinates
 	UFUNCTION(BlueprintCallable)
-	void ComputeInverseKinematics(UPARAM() TArray<float> DesiredEEPose, TArray<float>& TargetJointAngles);
+	void ComputeInverseKinematics(UPARAM() const FVector& DesiredEndEffectorEPosition, UPARAM() const FVector& DesiredZAxis,
+		UPARAM() const FVector& DesiredYAxis, TArray<float>& TargetJointAngles);
+
+	// Apply result of IK to target robot model
+	UFUNCTION(BlueprintCallable)
+	void SetRobotJointState(UPARAM() ARModel* Robot, UPARAM() TArray<float> JointValues);
 
 };
