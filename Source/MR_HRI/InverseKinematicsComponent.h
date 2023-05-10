@@ -118,6 +118,9 @@ public:
 	// Update joint angles and clip in [-pi, pi]
 	void UpdateJointAngles(const Eigen::VectorXf& JointAnglesDiff);
 
+	// Getter for joint angles
+	Eigen::VectorXf GetJointAngles();
+
 	// Utility method to compute pseudoinverse using SVD decomp
 	Eigen::MatrixXf PseudoInverse(const Eigen::MatrixXf& Matrix);
 

@@ -195,6 +195,18 @@ void URobotArm::UpdateJointAngles(const Eigen::VectorXf& JointAnglesDiff)
 	}
 }
 
+
+Eigen::VectorXf URobotArm::GetJointAngles()
+{
+	Eigen::VectorXf JointAngles(NLinks_);
+	int i = 0;
+	for (auto Link : Links) {
+		JointAngles(i) = Link->Theta_;
+	}
+	return JointAngles;
+}
+
+
 /*Eigen::MatrixXf URobotArm::PseudoInverse(const Eigen::MatrixXf& Matrix)
 {
 	float Tolerance = 1e-4;
@@ -315,8 +327,8 @@ void UInverseKinematicsComponent::InitFromDHParams(UPARAM() UDataTable* DHParams
 void UInverseKinematicsComponent::ComputeInverseKinematics(UPARAM() const FVector& DesiredEndEffectorEPosition, UPARAM() const FVector& DesiredZAxis,
 	UPARAM() const FVector& DesiredYAxis, bool& Success, TArray<float>& TargetJointAngles)
 {
-	Eigen::VectorXf ZeroVector = Eigen::VectorXf::Zero(6);
-	RobotArm->SetJointAngles(ZeroVector);
+	//Eigen::VectorXf ZeroVector = Eigen::VectorXf::Zero(6);
+	//RobotArm->SetJointAngles(ZeroVector);
 
 	// rewrite vectors in eigen format, including conversion to right-hand rule
 	Eigen::Vector3f ZAxis;
@@ -393,6 +405,7 @@ void UInverseKinematicsComponent::ComputeInverseKinematics(UPARAM() const FVecto
 	}
 	UE_LOG(LogTemp, Log, TEXT("--------"));
 
+	Eigen::VectorXf LastJointAngles = RobotArm->GetJointAngles();
 	Eigen::VectorXf TargetJointAnglesVector = RobotArm->InverseKinematics(DesiredEEPose, this->MaxIterations);
 
 	auto TEE_0 = RobotArm->TransformationMatrix();
@@ -406,6 +419,7 @@ void UInverseKinematicsComponent::ComputeInverseKinematics(UPARAM() const FVecto
 	for (int j = 0; j < TargetJointAnglesVector.size(); j++) {
 		if (isnan(TargetJointAnglesVector(j))) {
 			Success = false;
+			RobotArm->SetJointAngles(LastJointAngles);
 			return;
 		}
 		else {
