@@ -166,6 +166,8 @@ Eigen::MatrixXf URobotArm::ComputeJacobian(const Eigen::Vector3f& EEPosition)
 
 void URobotArm::SetJointAngles(const Eigen::VectorXf& JointAngles)
 {
+	const std::lock_guard<std::mutex> lock(Mutex);
+
 	int i = 0;
 	for (auto Link : Links)
 	{
@@ -177,6 +179,8 @@ void URobotArm::SetJointAngles(const Eigen::VectorXf& JointAngles)
 
 void URobotArm::UpdateJointAngles(const Eigen::VectorXf& JointAnglesDiff)
 {
+	const std::lock_guard<std::mutex> lock(Mutex);
+
 	int i = 0;
 	for (auto Link : Links)
 	{
@@ -190,6 +194,27 @@ void URobotArm::UpdateJointAngles(const Eigen::VectorXf& JointAnglesDiff)
 		i++;
 	}
 }
+
+/*Eigen::MatrixXf URobotArm::PseudoInverse(const Eigen::MatrixXf& Matrix)
+{
+	float Tolerance = 1e-4;
+
+	auto svd = Matrix.jacobiSvd(Eigen::ComputeFullU | Eigen::ComputeFullV);
+	const auto& singularValues = svd.singularValues();
+	Eigen::MatrixXf singularValuesInv(Matrix.cols(), Matrix.rows());
+	singularValuesInv.setZero();
+	for (unsigned int i = 0; i < singularValues.size(); ++i) {
+		if (singularValues(i) > Tolerance)
+		{
+			singularValuesInv(i, i) = 1.0f / singularValues(i);
+		}
+		else
+		{
+			singularValuesInv(i, i) = 0.0f;
+		}
+	}
+	return svd.matrixV() * singularValuesInv * svd.matrixU().adjoint();
+}*/
 
 
 Eigen::VectorXf URobotArm::InverseKinematics(const Eigen::VectorXf& DesiredEEPose, int MaxIterations)
@@ -206,7 +231,7 @@ Eigen::VectorXf URobotArm::InverseKinematics(const Eigen::VectorXf& DesiredEEPos
 
 		// Compute arm jacobian
 		Eigen::Vector3f EEPosition;
-		for (int k = 0; i < 3; i++)
+		for (int k = 0; k < 3; k++)
 		{
 			EEPosition(k) = EEPose(k);
 		}
@@ -288,9 +313,9 @@ void UInverseKinematicsComponent::InitFromDHParams(UPARAM() UDataTable* DHParams
 
 
 void UInverseKinematicsComponent::ComputeInverseKinematics(UPARAM() const FVector& DesiredEndEffectorEPosition, UPARAM() const FVector& DesiredZAxis,
-	UPARAM() const FVector& DesiredYAxis, TArray<float>& TargetJointAngles)
+	UPARAM() const FVector& DesiredYAxis, bool& Success, TArray<float>& TargetJointAngles)
 {
-	Eigen::VectorXf ZeroVector = Eigen::VectorXf::Zero(RobotArm->NLinks_);
+	Eigen::VectorXf ZeroVector = Eigen::VectorXf::Zero(6);
 	RobotArm->SetJointAngles(ZeroVector);
 
 	// rewrite vectors in eigen format, including conversion to right-hand rule
@@ -379,9 +404,16 @@ void UInverseKinematicsComponent::ComputeInverseKinematics(UPARAM() const FVecto
 	UE_LOG(LogTemp, Log, TEXT("--------"));
 
 	for (int j = 0; j < TargetJointAnglesVector.size(); j++) {
-		TargetJointAngles.Add(TargetJointAnglesVector(j));
+		if (isnan(TargetJointAnglesVector(j))) {
+			Success = false;
+			return;
+		}
+		else {
+			TargetJointAngles.Add(TargetJointAnglesVector(j));
+		}
 	}
-
+	Success = true;
+	return;
 }
 
 

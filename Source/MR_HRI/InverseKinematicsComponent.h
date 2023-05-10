@@ -4,10 +4,15 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include <mutex>
+
 #include <Eigen/Dense>
+#include <Eigen/SVD>
 #include <Eigen/QR>
+
 #include <Engine/DataTable.h>
 #include <Physics/RModel.h>
+
 #include "InverseKinematicsComponent.generated.h"
 
 
@@ -83,6 +88,9 @@ public:
 	// Array of Links to represent kinematic chain
 	TArray<ULink*> Links;
 
+	// Mutex needed for safe access to links' data
+	std::mutex Mutex;
+
 	// Default Constructor
 	URobotArm();
 
@@ -109,6 +117,9 @@ public:
 
 	// Update joint angles and clip in [-pi, pi]
 	void UpdateJointAngles(const Eigen::VectorXf& JointAnglesDiff);
+
+	// Utility method to compute pseudoinverse using SVD decomp
+	Eigen::MatrixXf PseudoInverse(const Eigen::MatrixXf& Matrix);
 
 	// Retrieve joint angles from desired end-effector's pose
 	Eigen::VectorXf InverseKinematics(const Eigen::VectorXf& DesiredEEPose, int MaxIterations);
@@ -139,7 +150,7 @@ public:
 	// Compute inverse kinematics given desired end effector's coordinates
 	UFUNCTION(BlueprintCallable)
 	void ComputeInverseKinematics(UPARAM() const FVector& DesiredEndEffectorEPosition, UPARAM() const FVector& DesiredZAxis,
-		UPARAM() const FVector& DesiredYAxis, TArray<float>& TargetJointAngles);
+		UPARAM() const FVector& DesiredYAxis, bool& Success, TArray<float>& TargetJointAngles);
 
 	// Apply result of IK to target robot model
 	UFUNCTION(BlueprintCallable)
