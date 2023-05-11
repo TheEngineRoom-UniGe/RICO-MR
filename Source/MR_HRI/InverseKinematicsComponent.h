@@ -153,7 +153,7 @@ public:
 	// Compute inverse kinematics given desired end effector's coordinates
 	UFUNCTION(BlueprintCallable)
 	void ComputeInverseKinematics(UPARAM() const FVector& DesiredEndEffectorEPosition, UPARAM() const FVector& DesiredZAxis,
-		UPARAM() const FVector& DesiredYAxis, bool& Success, TArray<float>& TargetJointAngles);
+		UPARAM() const FVector& DesiredYAxis, UPARAM() int DesiredDirection, bool& Success, TArray<float>& TargetJointAngles);
 
 	// Apply result of IK to target robot model
 	UFUNCTION(BlueprintCallable)

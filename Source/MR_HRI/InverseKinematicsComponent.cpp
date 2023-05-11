@@ -198,6 +198,8 @@ void URobotArm::UpdateJointAngles(const Eigen::VectorXf& JointAnglesDiff)
 
 Eigen::VectorXf URobotArm::GetJointAngles()
 {
+	const std::lock_guard<std::mutex> lock(Mutex);
+
 	Eigen::VectorXf JointAngles(NLinks_);
 	int i = 0;
 	for (auto Link : Links) {
@@ -325,7 +327,7 @@ void UInverseKinematicsComponent::InitFromDHParams(UPARAM() UDataTable* DHParams
 
 
 void UInverseKinematicsComponent::ComputeInverseKinematics(UPARAM() const FVector& DesiredEndEffectorEPosition, UPARAM() const FVector& DesiredZAxis,
-	UPARAM() const FVector& DesiredYAxis, bool& Success, TArray<float>& TargetJointAngles)
+	UPARAM() const FVector& DesiredYAxis, UPARAM() int DesiredDirection, bool& Success, TArray<float>& TargetJointAngles)
 {
 	//Eigen::VectorXf ZeroVector = Eigen::VectorXf::Zero(6);
 	//RobotArm->SetJointAngles(ZeroVector);
@@ -337,7 +339,7 @@ void UInverseKinematicsComponent::ComputeInverseKinematics(UPARAM() const FVecto
 	ZAxis(2) = DesiredZAxis.Z;
 
 	Eigen::Vector3f YAxis;
-	YAxis(0) = -DesiredYAxis.X;
+	YAxis(0) = DesiredYAxis.X;
 	YAxis(1) = DesiredYAxis.Y;
 	YAxis(2) = DesiredYAxis.Z;
 
@@ -392,8 +394,8 @@ void UInverseKinematicsComponent::ComputeInverseKinematics(UPARAM() const FVecto
 	}
 
 	Eigen::VectorXf DesiredEEPose(6);
-	DesiredEEPose(0) = -DesiredEndEffectorEPosition.X / 100.0f;
-	DesiredEEPose(1) = DesiredEndEffectorEPosition.Y / 100.0f;
+	DesiredEEPose(0) = DesiredDirection * DesiredEndEffectorEPosition.X / 100.0f;
+	DesiredEEPose(1) = -DesiredDirection * DesiredEndEffectorEPosition.Y / 100.0f;
 	DesiredEEPose(2) = DesiredEndEffectorEPosition.Z / 100.0f;
 	DesiredEEPose(3) = Alpha;
 	DesiredEEPose(4) = Beta;
