@@ -166,11 +166,14 @@ Eigen::MatrixXf URobotArm::ComputeJacobian(const Eigen::Vector3f& EEPosition)
 
 void URobotArm::SetJointAngles(const Eigen::VectorXf& JointAngles)
 {
-	const std::lock_guard<std::mutex> lock(Mutex);
-
+	//const std::lock_guard<std::mutex> lock(Mutex);
+	
 	int i = 0;
 	for (auto Link : Links)
 	{
+		if (!IsValid(Link))
+			return;
+
 		Link->Theta_ = JointAngles(i);
 		i++;
 	}
@@ -179,11 +182,14 @@ void URobotArm::SetJointAngles(const Eigen::VectorXf& JointAngles)
 
 void URobotArm::UpdateJointAngles(const Eigen::VectorXf& JointAnglesDiff)
 {
-	const std::lock_guard<std::mutex> lock(Mutex);
+	//const std::lock_guard<std::mutex> lock(Mutex);
 
 	int i = 0;
 	for (auto Link : Links)
 	{
+		if (!IsValid(Link))
+			return;
+
 		Link->Theta_ += JointAnglesDiff(i);
 		if (Link->Theta_ > PI) {
 			Link->Theta_ -= 2 * PI;
@@ -198,11 +204,17 @@ void URobotArm::UpdateJointAngles(const Eigen::VectorXf& JointAnglesDiff)
 
 Eigen::VectorXf URobotArm::GetJointAngles()
 {
-	const std::lock_guard<std::mutex> lock(Mutex);
+	//const std::lock_guard<std::mutex> lock(Mutex);
 
 	Eigen::VectorXf JointAngles(NLinks_);
 	int i = 0;
 	for (auto Link : Links) {
+
+		if (!IsValid(Link)) {
+			Eigen::VectorXf dummy(1);
+			return dummy;
+		}
+			
 		JointAngles(i) = Link->Theta_;
 	}
 	return JointAngles;
@@ -320,9 +332,6 @@ void UInverseKinematicsComponent::InitFromDHParams(UPARAM() UDataTable* DHParams
 	EEPos(1) = EEPose(1);
 	EEPos(2) = EEPose(2);
 	Eigen::MatrixXf J_T = RobotArm->ComputeJacobian(EEPos);
-	for (int j = 0; j < J_T.rows(); j++) {
-		UE_LOG(LogTemp, Log, TEXT("%f, %f, %f, %f, %f, %f"), J_T(j,0), J_T(j, 1), J_T(j, 2), J_T(j, 3), J_T(j, 4), J_T(j, 5));
-	}
 }
 
 
@@ -408,6 +417,10 @@ void UInverseKinematicsComponent::ComputeInverseKinematics(UPARAM() const FVecto
 	UE_LOG(LogTemp, Log, TEXT("--------"));
 
 	Eigen::VectorXf LastJointAngles = RobotArm->GetJointAngles();
+	if (LastJointAngles.size() != RobotArm->NLinks_) {
+		Success = false;
+		return;
+	}
 	Eigen::VectorXf TargetJointAnglesVector = RobotArm->InverseKinematics(DesiredEEPose, this->MaxIterations);
 
 	auto TEE_0 = RobotArm->TransformationMatrix();
@@ -437,6 +450,10 @@ void UInverseKinematicsComponent::SetRobotJointState(UPARAM() ARModel* Robot, UP
 {
 	int i = 0;
 	FHitResult Hit;
+
+	if (!IsValid(Robot))
+		return;
+
 	for (auto joint : Robot->GetJoints()) {
 		if (i < JointValues.Num()) {
 			joint->SetJointPosition(JointValues[i], &Hit);
