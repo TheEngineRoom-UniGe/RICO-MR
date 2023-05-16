@@ -11,19 +11,31 @@ ULink::ULink() {}
 
 void ULink::SetDHParams(float Theta, float Alpha, float a, float d)
 {
-	Theta_ = Theta;
-	Alpha_ = Alpha; 
-	a_ = a;
-	d_ = d;
+	this->Theta_ = Theta;
+	this->Alpha_ = Alpha;
+	this->a_ = a;
+	this->d_ = d;
+}
+
+
+void ULink::SetTheta(float Theta) 
+{
+	this->Theta_ = Theta;
+}
+
+
+float ULink::GetTheta()
+{
+	return this->Theta_;
 }
 
 
 Eigen::MatrixXf ULink::TransformationMatrix()
 {
-	float st = FMath::Sin(Theta_);
-	float ct = FMath::Cos(Theta_);
-	float sa = FMath::Sin(Alpha_);
-	float ca = FMath::Cos(Alpha_);
+	float st = FMath::Sin(this->Theta_);
+	float ct = FMath::Cos(this->Theta_);
+	float sa = FMath::Sin(this->Alpha_);
+	float ca = FMath::Cos(this->Alpha_);
 
 	Eigen::MatrixXf T(4, 4);
 	T << ct, -st * ca, st* sa, a_* ct,
@@ -171,10 +183,12 @@ void URobotArm::SetJointAngles(const Eigen::VectorXf& JointAngles)
 	int i = 0;
 	for (auto Link : Links)
 	{
-		if (!IsValid(Link))
+		if (!Link->IsValidLowLevel())
+			if (GEngine)
+				GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("Failed Setting Link!"));
 			return;
 
-		Link->Theta_ = JointAngles(i);
+		Link->SetTheta(JointAngles(i));
 		i++;
 	}
 }
@@ -187,16 +201,17 @@ void URobotArm::UpdateJointAngles(const Eigen::VectorXf& JointAnglesDiff)
 	int i = 0;
 	for (auto Link : Links)
 	{
-		if (!IsValid(Link))
+		if (!Link->IsValidLowLevel())
 			return;
 
-		Link->Theta_ += JointAnglesDiff(i);
-		if (Link->Theta_ > PI) {
-			Link->Theta_ -= 2 * PI;
+		float NewTheta = Link->GetTheta() + JointAnglesDiff(i);
+		if (NewTheta > PI) {
+			NewTheta -= 2 * PI;
 		}
-		else if (Link->Theta_ < -PI) {
-			Link->Theta_ += 2 * PI;
+		else if (NewTheta < -PI) {
+			NewTheta += 2 * PI;
 		}
+		Link->SetTheta(NewTheta);
 		i++;
 	}
 }
@@ -210,12 +225,15 @@ Eigen::VectorXf URobotArm::GetJointAngles()
 	int i = 0;
 	for (auto Link : Links) {
 
-		if (!IsValid(Link)) {
+		if (!Link->IsValidLowLevel()) {
 			Eigen::VectorXf dummy(1);
+			if (GEngine)
+				GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("Failed Getting Link!"));
 			return dummy;
 		}
 			
-		JointAngles(i) = Link->Theta_;
+		JointAngles(i) = Link->GetTheta();
+		i++;
 	}
 	return JointAngles;
 }
@@ -288,7 +306,7 @@ Eigen::VectorXf URobotArm::InverseKinematics(const Eigen::VectorXf& DesiredEEPos
 	Eigen::VectorXf TargetJointAngles(NLinks_);
 	int j = 0;
 	for (auto Link : Links) {
-		TargetJointAngles(j) = Link->Theta_;
+		TargetJointAngles(j) = Link->GetTheta();
 		j++;
 	}
 	return TargetJointAngles;
@@ -416,11 +434,11 @@ void UInverseKinematicsComponent::ComputeInverseKinematics(UPARAM() const FVecto
 	}
 	UE_LOG(LogTemp, Log, TEXT("--------"));
 
-	Eigen::VectorXf LastJointAngles = RobotArm->GetJointAngles();
+	/*Eigen::VectorXf LastJointAngles = RobotArm->GetJointAngles();
 	if (LastJointAngles.size() != RobotArm->NLinks_) {
 		Success = false;
 		return;
-	}
+	}*/
 	Eigen::VectorXf TargetJointAnglesVector = RobotArm->InverseKinematics(DesiredEEPose, this->MaxIterations);
 
 	auto TEE_0 = RobotArm->TransformationMatrix();
@@ -431,7 +449,7 @@ void UInverseKinematicsComponent::ComputeInverseKinematics(UPARAM() const FVecto
 	}
 	UE_LOG(LogTemp, Log, TEXT("--------"));
 
-	for (int j = 0; j < TargetJointAnglesVector.size(); j++) {
+	/*for (int j = 0; j < TargetJointAnglesVector.size(); j++) {
 		if (isnan(TargetJointAnglesVector(j))) {
 			Success = false;
 			RobotArm->SetJointAngles(LastJointAngles);
@@ -440,7 +458,11 @@ void UInverseKinematicsComponent::ComputeInverseKinematics(UPARAM() const FVecto
 		else {
 			TargetJointAngles.Add(TargetJointAnglesVector(j));
 		}
+	}*/
+	for (int j = 0; j < TargetJointAnglesVector.size(); j++) {
+		TargetJointAngles.Add(TargetJointAnglesVector(j));
 	}
+	
 	Success = true;
 	return;
 }

@@ -51,7 +51,7 @@ class MR_HRI_API ULink : public UObject
 {
 	GENERATED_BODY()
 
-public:
+protected:
 
 	// Link parameter variables, according to DH convention
 	float Theta_;
@@ -59,11 +59,20 @@ public:
 	float a_;
 	float d_;
 
+
+public:
+
 	// Default Constructor
 	ULink();
 
 	// Set link's DH parameters
 	void SetDHParams(float Theta, float Alpha, float a, float d);
+
+	// Utility method to set theta value
+	void SetTheta(float Theta);
+
+	// Return link's theta
+	float GetTheta();
 
 	// Compute link transformation matrix
 	Eigen::MatrixXf TransformationMatrix();
@@ -86,6 +95,7 @@ public:
 	int NLinks_;
 
 	// Array of Links to represent kinematic chain
+	UPROPERTY(VisibleAnywhere)
 	TArray<ULink*> Links;
 
 	// Mutex needed for safe access to links' data
@@ -141,6 +151,7 @@ public:
 	int MaxIterations;
 
 	// Reference to RobotArm class
+	UPROPERTY(VisibleAnywhere)
 	URobotArm* RobotArm;
 
 	// Sets default values for this component's properties

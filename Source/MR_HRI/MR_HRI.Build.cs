@@ -7,8 +7,10 @@ public class MR_HRI : ModuleRules
 	public MR_HRI(ReadOnlyTargetRules Target) : base(Target)
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
-	
-		PublicDependencyModuleNames.AddRange(new string[] { 
+        CppStandard = CppStandardVersion.Cpp17;//avoid using boost
+        bUseRTTI = true;
+
+        PublicDependencyModuleNames.AddRange(new string[] { 
 			"Core", 
 			"CoreUObject", 
 			"Engine", 
@@ -22,9 +24,15 @@ public class MR_HRI : ModuleRules
 			"OpenSSL"
 		});
 
-		PrivateDependencyModuleNames.AddRange(new string[] {  });
+        PrivateDependencyModuleNames.AddRange(new string[]
+        {
+			"EasyKafka",
+			"KafkaLib",
+			"KafkaConsumer",
+			"KafkaProducer"
+        });
 
-		AddEngineThirdPartyPrivateStaticDependencies(Target,
+        AddEngineThirdPartyPrivateStaticDependencies(Target,
 			"Eigen",
 			"OpenSSL"
 		);
