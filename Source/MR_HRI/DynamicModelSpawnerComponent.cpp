@@ -59,6 +59,12 @@ ARModel* UDynamicModelSpawnerComponent::SpawnModelWithController(UPARAM() USDFDa
         }
         ControllerComponent->RegisterComponent();
 
+        // Reset internal robot config for debug purposes
+        FHitResult hit;
+        for (auto joint : NewRobot->GetJoints()) {
+            joint->SetJointPosition(0.0, &hit);
+        }
+
         // Add new robot to list
         RobotModels.Add(NewRobot);
 
