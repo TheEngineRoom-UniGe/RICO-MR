@@ -35,6 +35,7 @@ public class UROSBridge : ModuleRules
 				"PacketHandler",
 				"libWebSockets",
 				"OpenSSL",
+				"OpenSSLens",	
 				"zlib",
 				"Json",
 				"JsonUtilities",

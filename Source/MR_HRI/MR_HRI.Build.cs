@@ -20,8 +20,8 @@ public class MR_HRI : ModuleRules
 			"UROSBridge",
 			"Json",
             "JsonUtilities",
-			"Eigen",
-			"OpenSSL"
+			"Eigen"
+			//"OpenSSL"
 		});
 
         PrivateDependencyModuleNames.AddRange(new string[]
@@ -33,8 +33,7 @@ public class MR_HRI : ModuleRules
         });
 
         AddEngineThirdPartyPrivateStaticDependencies(Target,
-			"Eigen",
-			"OpenSSL"
+			"Eigen"
 		);
 
         // Uncomment if you are using Slate UI
