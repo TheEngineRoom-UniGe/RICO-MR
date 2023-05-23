@@ -1,34 +1,34 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
-
 #include "HeadPosePublisher.h"
 
 // Sets default values for this component's properties
 UHeadPosePublisher::UHeadPosePublisher()
 {
-	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
-	// off to improve performance if you don't need them.
-	PrimaryComponentTick.bCanEverTick = true;
-
-	// ...
+	PrimaryComponentTick.bCanEverTick = false;
 }
 
 
-// Called when the game starts
-void UHeadPosePublisher::BeginPlay()
+void UHeadPosePublisher::PublishHeadPose(UPARAM() FVector Position, UPARAM() FRotator Rotation, UPARAM() FString Topic)
 {
-	Super::BeginPlay();
+	// Build pose msg from inputs
+	geometry_msgs::Point Point;
+	geometry_msgs::Quaternion Quat;
+	geometry_msgs::Pose PoseMsg;
 
-	// ...
-	
-}
+	Point.SetVector(Position);
+	Quat.SetQuat(Rotation.Quaternion());
 
+	PoseMsg.SetPosition(Point);
+	PoseMsg.SetOrientation(Quat);
 
-// Called every frame
-void UHeadPosePublisher::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
-{
-	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+	// Build Kafka producer record based on pose msg
+	FProducerRecord record;
+	record.Key = "HeadPose";
+	record.Topic = Topic;
+	record.Value = PoseMsg.ToString();
+	record.Id = FMath::RandRange(1, 1000);
 
-	// ...
+	// Get reference to kafka producer
+	TSharedPtr<FEasyKafkaModule> EasyKafka = GEngine->GetEngineSubsystem<UEasyKafkaSubsystem>()->GetEasyKafka();
+	EasyKafka->GetProducer()->ProduceRecord(record);
 }
 
