@@ -14,7 +14,8 @@ void UHeadPosePublisher::PublishHeadPose(UPARAM() FVector Position, UPARAM() FRo
 	geometry_msgs::Quaternion Quat;
 	geometry_msgs::Pose PoseMsg;
 
-	Point.SetVector(Position);
+	// Division needed since unreal expresses positions in cm
+	Point.SetVector(Position / 100.0f);
 	Quat.SetQuat(Rotation.Quaternion());
 
 	PoseMsg.SetPosition(Point);

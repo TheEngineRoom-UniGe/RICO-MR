@@ -69,7 +69,7 @@ namespace nav_msgs
 			FString PosesString = "[ ";
 			for (auto& value : Poses)
 				PosesString += value.ToString() + TEXT(", ");
-			NamesString += " ]";
+			PosesString += " ]";
 
 			return TEXT("Path { header = ") + Header.ToString() +
 				TEXT(", poses = ") + PosesString +

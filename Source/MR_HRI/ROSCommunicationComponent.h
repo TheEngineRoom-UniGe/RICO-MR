@@ -8,6 +8,7 @@
 #include <Physics/RModel.h>
 #include "FROSJointConfigSubscriber.h"
 #include "FROSJointTrajectorySubscriber.h"
+#include "JointTrajectoryLatentAction.h"
 #include "ROSCommunicationComponent.generated.h"
 
 

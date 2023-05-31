@@ -5,7 +5,6 @@
 #include "trajectory_msgs/JointTrajectory.h"
 #include "trajectory_msgs/JointTrajectoryPoint.h"
 #include "Physics/RModel.h"
-#include "FROSJointTrajectoryLatentAction.h"
 
 class FROSJointTrajectorySubscriber : public FROSBridgeSubscriber {
 

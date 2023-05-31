@@ -1,4 +1,4 @@
-#include "FROSJointTrajectoryLatentAction.h"
+#include "JointTrajectoryLatentAction.h"
 
 JointTrajectoryLatentAction::JointTrajectoryLatentAction(TArray<trajectory_msgs::JointTrajectoryPoint> trajectoryPoints,
 	TArray<FString> jointNames, ARModel* robot, float& deltaTime, float updateFrequency, int maxSteps) :
@@ -16,7 +16,7 @@ JointTrajectoryLatentAction::JointTrajectoryLatentAction(TArray<trajectory_msgs:
 	for (int i = 0; i < jointNames_.Num(); i++) {
 		startingJointConfig_.Add(0.0);
 	}
-	FString logMessage = "Latent Action issued to execute trajectory on " + robot_->GetName();
+	FString logMessage = "Joint trajectory latent action issued to execute trajectory on " + robot_->GetName();
 	UE_LOG(LogTemp, Log, TEXT("%s"), *logMessage);
 }
  

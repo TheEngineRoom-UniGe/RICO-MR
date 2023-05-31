@@ -7,6 +7,16 @@ ULatentActionDispatcher::ULatentActionDispatcher()
 }
 
 
+void ULatentActionDispatcher::SetBaseTransform(UPARAM() FTransform BaseTransf)
+{
+	this->BaseTransform.SetComponents(
+		BaseTransf.GetRotation(),
+		BaseTransf.GetTranslation(),
+		BaseTransf.GetScale3D()
+	);
+}
+
+
 void ULatentActionDispatcher::ProcessIncomingMessage(UPARAM() ARModel* Robot, UPARAM() FString Topic, UPARAM() FString Message)
 {
 	if (Topic.Contains("trajectory")) {
@@ -16,7 +26,7 @@ void ULatentActionDispatcher::ProcessIncomingMessage(UPARAM() ARModel* Robot, UP
 		TriggerRobotJointConfigAction(Robot, Message);
 	}
 	else if (Topic.Contains("navigation")) {
-		// TO DO
+		TriggerNavigationLatentAction(Robot, Message);
 	}
 	else
 		return;
@@ -88,8 +98,46 @@ void ULatentActionDispatcher::TriggerJointTrajectoryLatentAction(ARModel* Robot,
 			JointNames,
 			Robot,
 			GetWorld()->DeltaTimeSeconds,
-			TrajectoryUpdateFrequency,
+			JointTrajectoryUpdateFrequency,
 			TrajectoryMaxSteps
+		));
+	}
+}
+
+
+void ULatentActionDispatcher::TriggerNavigationLatentAction(ARModel* Robot, FString Message)
+{
+	TSharedPtr<FJsonObject> ParsedMessage;
+	TSharedRef<TJsonReader<>> JsonReader = TJsonReaderFactory<>::Create(Message);
+	if (FJsonSerializer::Deserialize(JsonReader, ParsedMessage))
+	{
+		auto JsonWorld2QRTransform = ParsedMessage->GetObjectField("qr2world_pose");
+		auto World2QRTransform = geometry_msgs::Pose::GetFromJson(JsonWorld2QRTransform);
+
+		auto JsonPath = ParsedMessage->GetObjectField("path");
+		auto Path = nav_msgs::Path::GetFromJson(JsonPath);
+
+		float pX = World2QRTransform.GetPosition().GetX();
+		float pY = World2QRTransform.GetPosition().GetY();
+		float pZ = World2QRTransform.GetPosition().GetZ();
+		FVector World2QRPosition = FVector(pX, pY, pZ);
+
+		float rX = World2QRTransform.GetOrientation().GetX();
+		float rY = World2QRTransform.GetOrientation().GetY();
+		float rZ = World2QRTransform.GetOrientation().GetZ();
+		float rW = World2QRTransform.GetOrientation().GetW();
+		FQuat World2QRRotation = FQuat(rX, rY, rZ, rW);
+
+		int id = FMath::RandRange(1, 1000);
+		GetWorld()->GetLatentActionManager().AddNewAction(this, id, new NavigationLatentAction(
+			Path.GetPoses(),
+			BaseTransform.GetTranslation(),
+			BaseTransform.GetRotation(),
+			World2QRPosition,
+			World2QRRotation,
+			Robot,
+			GetWorld()->DeltaTimeSeconds,
+			NavPathUpdateFrequency
 		));
 	}
 }

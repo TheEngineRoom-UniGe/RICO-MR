@@ -28,6 +28,8 @@ public:
 	// Constructor setting default values for latent action
 	JointTrajectoryLatentAction(TArray<trajectory_msgs::JointTrajectoryPoint> trajectoryPoints, 
 		TArray<FString> jointNames, ARModel* robot, float& deltaTime, float updateFrequency, int maxSteps);
+
+	// Dtor
 	~JointTrajectoryLatentAction() {};
 
 	// Method called at every frame once latent action is issued
