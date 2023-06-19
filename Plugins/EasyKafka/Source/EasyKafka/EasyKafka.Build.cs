@@ -43,7 +43,8 @@ public class EasyKafka : ModuleRules
 				"Engine",
 				"KafkaLib",
 				"KafkaConsumer",
-				"KafkaProducer"
+				"KafkaProducer",
+				"KafkaAdmin"
 				// ... add private dependencies that you statically link with here ...	
 			}
 			);

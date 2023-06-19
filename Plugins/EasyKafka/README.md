@@ -15,6 +15,7 @@ EasyKafka is a Kafka/Redpanda client sub-system for unreal engine. It supports p
 # Supported Platforms
 
  - Windows x86_64
+ - Hololens 2 (Windows ARM64)
  - Linux x86_64
  - Linux ARM64
 
@@ -24,14 +25,16 @@ Link the plugin modules to your project through `<YourModule>.build.cs`:
 
 ```cs
 CppStandard = CppStandardVersion.Cpp17;//avoid using boost
-bUseRTTI = true;
+if(Target.Platform == UnrealTargetPlatform.HoloLens || Target.Platform == UnrealTargetPlatform.Win64)
+	bUseRTTI = true;
 
  PrivateDependencyModuleNames.AddRange( new string[]
 {
     "EasyKafka",
     "KafkaLib",
     "KafkaConsumer",
-    "KafkaProducer"
+    "KafkaProducer",
+    "KafkaAdmin"
 });
 ```
 
@@ -46,7 +49,7 @@ Create Consumer with default configuration:
 #include "EasyKafkaSubsystem.h"
 
 TSharedPtr<FEasyKafkaModule> EasyKafka = GEngine->GetEngineSubsystem<UEasyKafkaSubsystem>()->GetEasyKafka();
-EasyKafka->GetConsumer()->CreateConsumer(`<BOOTSTRAP_SERVERS_COMMA_SEPARATED>`, `<USERNAME>`, `<TOKEN/PASSWORD>`);
+EasyKafka->GetConsumer()->CreateConsumer(`<BOOTSTRAP_SERVERS_COMMA_SEPARATED>`, `<USERNAME>`, `<TOKEN/PASSWORD>`, (int)EKafkaLogLevel::ERR);
 ```
 
 Create Consumer with configuration:
@@ -61,7 +64,7 @@ TMap<EKafkaConsumerConfig, FString> KafkaConfiguration =
 	{EKafkaConsumerConfig::CLIENT_ID,"34235"},
 	{EKafkaConsumerConfig::SOCKET_TIMEOUT_MS,"10000"}
 };
-EasyKafka->GetConsumer()->CreateConsumer(`<BOOTSTRAP_SERVERS_COMMA_SEPARATED>`, `<USERNAME>`, `<TOKEN/PASSWORD>`, KafkaConfiguration);
+EasyKafka->GetConsumer()->CreateConsumer(`<BOOTSTRAP_SERVERS_COMMA_SEPARATED>`, `<USERNAME>`, `<TOKEN/PASSWORD>`, KafkaConfiguration, (int)EKafkaLogLevel::ERR);
 ```
 
 Consume messages:
@@ -84,7 +87,7 @@ EasyKafka->GetConsumer()->Subscribe(
 
 EasyKafka->GetConsumer()->StartConsuming();
 ```
-**ATTENTION: MAKE SURE TO COMMIT FROM COSUMER RUNNABLE THREAD BEFORE PROCESSING RECORDS IF USE DISABLED AUTOCOMMIT.**
+**ATTENTION: MAKE SURE TO COMMIT FROM THE CONSUMER RUNNABLE THREAD BEFORE PROCESSING RECORDS IF YOU DISABLED AUTOCOMMIT.**
 
 ## Blueprint
 
@@ -101,7 +104,7 @@ Create Producer with default configuration:
 #include "EasyKafkaSubsystem.h"
 
 TSharedPtr<FEasyKafkaModule> EasyKafka = GEngine->GetEngineSubsystem<UEasyKafkaSubsystem>()->GetEasyKafka();
-EasyKafka->GetProducer()->CreateProducer(`<BOOTSTRAP_SERVERS_COMMA_SEPARATED>`, `<USERNAME>`, `<TOKEN/PASSWORD>`);
+EasyKafka->GetProducer()->CreateProducer(`<BOOTSTRAP_SERVERS_COMMA_SEPARATED>`, `<USERNAME>`, `<TOKEN/PASSWORD>`, (int)EKafkaLogLevel::ERR);
 ```
 
 Create Producer with configuration:
@@ -116,7 +119,7 @@ TMap<EKafkaProducerConfig, FString> KafkaConfiguration =
 	{EKafkaProducerConfig::MESSAGE_TIMEOUT_MS,"5000"},
 	{EKafkaProducerConfig::REQUEST_TIMEOUT_MS,"5000"}
 };
-EasyKafka->GetProducer()->CreateProducer(`<BOOTSTRAP_SERVERS_COMMA_SEPARATED>`, `<USERNAME>`, `<TOKEN/PASSWORD>`, KafkaConfiguration);
+EasyKafka->GetProducer()->CreateProducer(`<BOOTSTRAP_SERVERS_COMMA_SEPARATED>`, `<USERNAME>`, `<TOKEN/PASSWORD>`, KafkaConfiguration, (int)EKafkaLogLevel::ERR);
 ```
 
 on record produced/failed to produce callback
@@ -161,6 +164,46 @@ EasyKafka->GetProducer()->ProduceRecord(record);
 ## Blueprint
 
 <img src="Images/ProducerBP.png" alt="ProducerBP">
+
+# Kafka Admin Basic Usage
+
+**ALL THE METHODS ARE BLOCKING, ASYNC TO BE ADDED.**
+## C++
+Create Admin with default configuration:
+
+```cpp
+#include "EasyKafkaSubsystem.h"
+
+TSharedPtr<FEasyKafkaModule> EasyKafka = GEngine->GetEngineSubsystem<UEasyKafkaSubsystem>()->GetEasyKafka();
+EasyKafka->GetAdmin()->CreateAdmin(`<BOOTSTRAP_SERVERS_COMMA_SEPARATED>`, `<USERNAME>`, `<TOKEN/PASSWORD>`, (int)EKafkaLogLevel::ERR);
+```
+Create Admin with configuration:
+
+```cpp
+#include "EasyKafkaSubsystem.h"
+
+TSharedPtr<FEasyKafkaModule> EasyKafka = GEngine->GetEngineSubsystem<UEasyKafkaSubsystem>()->GetEasyKafka();
+
+TMap<EKafkaAdminConfig, FString> KafkaConfiguration =
+{
+	{EKafkaAdminConfig::SOCKET_TIMEOUT_MS,"10000"}
+};
+EasyKafka->GetAdmin()->CreateAdmin(`<BOOTSTRAP_SERVERS_COMMA_SEPARATED>`, `<USERNAME>`, `<TOKEN/PASSWORD>`, KafkaConfiguration, (int)EKafkaLogLevel::ERR);
+```
+Simple Admin request example:
+
+```cpp
+const TArray<FString> TopicsToDelete = { "Topic1Name", "Topic2Name" };
+FAdminRequestResult Result = EasyKafka->GetAdmin()->DeleteTopics(TopicsToDelete);
+
+if (Result.bError)
+{
+	UE_LOG(LogTemp, Error, TEXT("Error deleting topics:  %s\n"), *Result.ErrorMessage);
+}
+```
+## Blueprint
+
+<img src="Images/AdminBP.png" alt="ProducerBP">
 
 ## Find it helpful?
 

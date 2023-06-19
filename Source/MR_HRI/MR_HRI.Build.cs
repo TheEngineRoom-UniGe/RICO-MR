@@ -28,6 +28,7 @@ public class MR_HRI : ModuleRules
         {
 			"EasyKafka",
 			"KafkaLib",
+			"KafkaAdmin",
 			"KafkaConsumer",
 			"KafkaProducer"
         });

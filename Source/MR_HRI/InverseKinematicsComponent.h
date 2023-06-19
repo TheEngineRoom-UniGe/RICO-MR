@@ -24,16 +24,16 @@ struct FDHParamsStruct: public FTableRowBase
 
 public:
 		
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = LevelUp)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float Theta;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = LevelUp)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float Alpha;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = LevelUp)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float a;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = LevelUp)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float d;
 
 	FDHParamsStruct() {
