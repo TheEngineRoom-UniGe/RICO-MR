@@ -1,0 +1,6 @@
+[submodule "Plugins/EasyKafka"]
+	path = Plugins/EasyKafka
+	url = https://github.com/sha3sha3/UE-EasyKafka.git
+[submodule "Plugins/OpenSSL-Hololens"]
+	path = Plugins/OpenSSL-Hololens
+	url = https://github.com/sha3sha3/UE-OpenSSL-Hololens.git
