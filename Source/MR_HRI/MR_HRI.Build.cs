@@ -30,7 +30,11 @@ public class MR_HRI : ModuleRules
 			"KafkaLib",
 			"KafkaAdmin",
 			"KafkaConsumer",
-			"KafkaProducer"
+			"KafkaProducer",
+            "ChunkDownloader",
+            "OpenSSLens",
+            "HTTP",
+            "PakFile"
         });
 
         AddEngineThirdPartyPrivateStaticDependencies(Target,
@@ -43,7 +47,7 @@ public class MR_HRI : ModuleRules
         // Uncomment if you are using online features
         // PrivateDependencyModuleNames.Add("OnlineSubsystem");
 
-
+        bEnableExceptions = true;
 
         // To include OnlineSubsystemSteam, add it to the plugins section in your uproject file with the Enabled attribute set to true
     }
