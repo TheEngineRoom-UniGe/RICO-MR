@@ -16,6 +16,9 @@ void UBaseGameInstance::Init()
 {
     Super::Init();
 
+#ifdef PLATFORM_WINDOWS
+    return;
+#endif
 
 	UBaseGameInstance::OriginalPlatform = &FPlatformFileManager::Get().GetPlatformFile();
 
@@ -23,6 +26,7 @@ void UBaseGameInstance::Init()
 	if (!PakPlatform)
 	{
 		UBaseGameInstance::PakPlatform = MakeShared<FPakPlatformFile>();
+
 	}
     
 	// Initialize the pak platform file. This is where the MountPak delegate gets set.
@@ -61,6 +65,11 @@ void UBaseGameInstance::Shutdown()
 
 void UBaseGameInstance::GetLoadingProgress(int32& BytesDownloaded, int32& TotalBytesToDownload, float& DownloadPercent, int32& ChunksMounted, int32& TotalChunksToMount, float& MountPercent) const
 {
+
+#ifdef PLATFORM_WINDOWS
+    return;
+#endif
+
     //Get a reference to ChunkDownloader
     TSharedRef<FChunkDownloader> Downloader = FChunkDownloader::GetChecked();
 
