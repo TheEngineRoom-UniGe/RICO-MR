@@ -16,6 +16,40 @@
 #include "InverseKinematicsComponent.generated.h"
 
 
+/** Structure defining utilities for generalizing IK component */
+USTRUCT(BlueprintType)
+struct FIKUtilsStruct : public FTableRowBase
+{
+	GENERATED_USTRUCT_BODY()
+
+public:
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		int Direction;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		FVector EndEffectorOffset;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		TArray<FString> JointNames;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		TArray<float> JointMultiplierValues;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		TArray<float> JointBaseValues;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		bool InvertAxes;
+
+	FIKUtilsStruct() {
+		Direction = 1;
+		EndEffectorOffset = FVector::ZeroVector;
+		InvertAxes = true;
+	}
+};
+
+
 /** Structure that defines a row of DH params */
 USTRUCT(BlueprintType)
 struct FDHParamsStruct: public FTableRowBase
@@ -153,13 +187,21 @@ public:
 	// Reference to RobotArm class
 	UPROPERTY(VisibleAnywhere)
 	URobotArm* RobotArm;
+	TArray<FString> IKJoints;
+	TArray<float> IKJointMultiplierArray;
+	TArray<float> IKJointBaseValuesArray;
+	bool InvertAxes;
 
 	// Sets default values for this component's properties
 	UInverseKinematicsComponent();
 
+	// Get IK utilities parameters from corresponding table
+	UFUNCTION(BlueprintCallable)
+	void InitIKUtilsParams(UPARAM() UDataTable* IKUtilsTable, int& OutDirection, FVector& OutEEOffset);
+
 	// Get matrix of DH parameters and initialize RobotArm class
 	UFUNCTION(BlueprintCallable)
-	void InitFromDHParams(UPARAM() UDataTable* DHParamsTable);
+	void InitFromDHParams(UPARAM() UDataTable* DHParamsTable, int& OutNLinks);
 
 	// Compute inverse kinematics given desired end effector's coordinates
 	UFUNCTION(BlueprintCallable)

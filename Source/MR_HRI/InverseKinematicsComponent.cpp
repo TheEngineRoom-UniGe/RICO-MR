@@ -319,7 +319,31 @@ Eigen::VectorXf URobotArm::InverseKinematics(const Eigen::VectorXf& DesiredEEPos
 UInverseKinematicsComponent::UInverseKinematicsComponent() {}
 
 
-void UInverseKinematicsComponent::InitFromDHParams(UPARAM() UDataTable* DHParamsTable)
+void UInverseKinematicsComponent::InitIKUtilsParams(UPARAM() UDataTable* IKUtilsTable, int& OutDirection, FVector& OutEEOffset)
+{
+	TArray<FIKUtilsStruct*> IKUtilsArray;
+	IKUtilsTable->GetAllRows<FIKUtilsStruct>(TEXT("IKUtils"), IKUtilsArray);
+	for (auto Row : IKUtilsArray)
+	{
+		OutDirection = Row->Direction;
+		OutEEOffset.X = Row->EndEffectorOffset.X;
+		OutEEOffset.Y = Row->EndEffectorOffset.Y;
+		OutEEOffset.Z = Row->EndEffectorOffset.Z;
+		for (auto JN : Row->JointNames) {
+			IKJoints.Add(JN);
+		}
+		for (auto JM : Row->JointMultiplierValues) {
+			IKJointMultiplierArray.Add(JM);
+		}
+		for (auto JV : Row->JointBaseValues) {
+			IKJointBaseValuesArray.Add(JV);
+		}
+		InvertAxes = Row->InvertAxes;
+	}
+}
+
+
+void UInverseKinematicsComponent::InitFromDHParams(UPARAM() UDataTable* DHParamsTable, int& OutNLinks)
 {
 	// Instantiate robot arm ptr
 	RobotArm = NewObject<URobotArm>(this);
@@ -349,7 +373,14 @@ void UInverseKinematicsComponent::InitFromDHParams(UPARAM() UDataTable* DHParams
 	EEPos(0) = EEPose(0);
 	EEPos(1) = EEPose(1);
 	EEPos(2) = EEPose(2);
+	UE_LOG(LogTemp, Log, TEXT("End Effector' Initial Pose:"));
+	for (int j = 0; j < EEPose.size(); j++) {
+		UE_LOG(LogTemp, Log, TEXT("%f"), EEPose(j));
+	}
 	Eigen::MatrixXf J_T = RobotArm->ComputeJacobian(EEPos);
+
+	// Return number of links to calling blueprint
+	OutNLinks = NLinks;
 }
 
 
@@ -423,6 +454,10 @@ void UInverseKinematicsComponent::ComputeInverseKinematics(UPARAM() const FVecto
 	Eigen::VectorXf DesiredEEPose(6);
 	DesiredEEPose(0) = DesiredDirection * DesiredEndEffectorEPosition.X / 100.0f;
 	DesiredEEPose(1) = -DesiredDirection * DesiredEndEffectorEPosition.Y / 100.0f;
+	if (InvertAxes) {
+		DesiredEEPose(0) = DesiredDirection * DesiredEndEffectorEPosition.Y / 100.0f;
+		DesiredEEPose(1) = DesiredDirection * DesiredEndEffectorEPosition.X / 100.0f;
+	}
 	DesiredEEPose(2) = DesiredEndEffectorEPosition.Z / 100.0f;
 	DesiredEEPose(3) = Alpha;
 	DesiredEEPose(4) = Beta;
@@ -468,7 +503,8 @@ void UInverseKinematicsComponent::ComputeInverseKinematics(UPARAM() const FVecto
 }
 
 
-void UInverseKinematicsComponent::SetRobotJointState(UPARAM() ARModel* Robot, UPARAM() TArray<float> JointValues)
+void UInverseKinematicsComponent::SetRobotJointState(UPARAM() ARModel* Robot, 
+	UPARAM() TArray<float> JointValues)
 {
 	int i = 0;
 	FHitResult Hit;
@@ -476,11 +512,12 @@ void UInverseKinematicsComponent::SetRobotJointState(UPARAM() ARModel* Robot, UP
 	if (!IsValid(Robot))
 		return;
 
-	for (auto joint : Robot->GetJoints()) {
-		if (i < JointValues.Num()) {
-			joint->SetJointPosition(JointValues[i], &Hit);
-			i++;
-		}
+	UE_LOG(LogTemp, Log, TEXT("------"));
+	for (auto IKJoint : IKJoints) {
+		float vi = IKJointMultiplierArray[i] * (IKJointBaseValuesArray[i] + JointValues[i]);
+		UE_LOG(LogTemp, Log, TEXT("%f"), vi);
+		Robot->GetJoint(IKJoint)->SetJointPosition(vi, &Hit);
+		i++;
 	}
 }
 
