@@ -30,6 +30,18 @@ float ULink::GetTheta()
 }
 
 
+void ULink::SetD(float D)
+{
+	this->d_ = D;
+}
+
+
+float ULink::GetD()
+{
+	return this->d_;
+}
+
+
 Eigen::MatrixXf ULink::TransformationMatrix()
 {
 	float st = FMath::Sin(this->Theta_);
@@ -78,7 +90,7 @@ Eigen::VectorXf ULink::BasicJacobian(const Eigen::MatrixXf& PreviousTransform, c
 URobotArm::URobotArm() {}
 
 
-void URobotArm::Init(int NLinks, const Eigen::MatrixXf& DHParams)
+void URobotArm::Init(int NLinks, const Eigen::MatrixXf& DHParams, TArray<FString> JointTypesArray)
 {
 	NLinks_ = NLinks;
 	for (int i = 0; i < NLinks_; i++) 
@@ -91,6 +103,10 @@ void URobotArm::Init(int NLinks, const Eigen::MatrixXf& DHParams)
 		ULink* NewLink = NewObject<ULink>(this);
 		NewLink->SetDHParams(Theta, Alpha, a, d);
 		Links.Add(NewLink);
+	}
+
+	for (auto Jt : JointTypesArray) {
+		JointTypes.Add(Jt);
 	}
 }
 
@@ -201,17 +217,28 @@ void URobotArm::UpdateJointAngles(const Eigen::VectorXf& JointAnglesDiff)
 	int i = 0;
 	for (auto Link : Links)
 	{
-		if (!Link->IsValidLowLevel())
-			return;
-
-		float NewTheta = Link->GetTheta() + JointAnglesDiff(i);
-		if (NewTheta > PI) {
-			NewTheta -= 2 * PI;
+		if (this->JointTypes[i] == "R")
+		{
+			float NewTheta = Link->GetTheta() + JointAnglesDiff(i);
+			if (NewTheta > PI) {
+				NewTheta -= 2 * PI;
+			}
+			else if (NewTheta < -PI) {
+				NewTheta += 2 * PI;
+			}
+			Link->SetTheta(NewTheta);
 		}
-		else if (NewTheta < -PI) {
-			NewTheta += 2 * PI;
+		else if (this->JointTypes[i] == "P")
+		{
+			//float NewD = Link->GetD() + JointAnglesDiff(i);
+			//if (NewD > 0.3) {
+			//	NewD = 0.3;
+			//}
+			//else if (NewD < 0.0) {
+			//	NewD = 0.0;
+			//}
+			Link->SetD(0.1);
 		}
-		Link->SetTheta(NewTheta);
 		i++;
 	}
 }
@@ -220,7 +247,6 @@ void URobotArm::UpdateJointAngles(const Eigen::VectorXf& JointAnglesDiff)
 Eigen::VectorXf URobotArm::GetJointAngles()
 {
 	//const std::lock_guard<std::mutex> lock(Mutex);
-
 	Eigen::VectorXf JointAngles(NLinks_);
 	int i = 0;
 	for (auto Link : Links) {
@@ -306,7 +332,12 @@ Eigen::VectorXf URobotArm::InverseKinematics(const Eigen::VectorXf& DesiredEEPos
 	Eigen::VectorXf TargetJointAngles(NLinks_);
 	int j = 0;
 	for (auto Link : Links) {
-		TargetJointAngles(j) = Link->GetTheta();
+		if (this->JointTypes[j] == "P") {
+			TargetJointAngles(j) = Link->GetD();
+		}
+		else if (this->JointTypes[j] == "R") {
+			TargetJointAngles(j) = Link->GetTheta();
+		}
 		j++;
 	}
 	return TargetJointAngles;
@@ -319,7 +350,7 @@ Eigen::VectorXf URobotArm::InverseKinematics(const Eigen::VectorXf& DesiredEEPos
 UInverseKinematicsComponent::UInverseKinematicsComponent() {}
 
 
-void UInverseKinematicsComponent::InitIKUtilsParams(UPARAM() UDataTable* IKUtilsTable, int& OutDirection, FVector& OutEEOffset)
+void UInverseKinematicsComponent::InitIKUtilsParams(UPARAM() UDataTable* IKUtilsTable, int& OutDirection, FVector& OutEEOffset, bool& OutInvertedAxes)
 {
 	TArray<FIKUtilsStruct*> IKUtilsArray;
 	IKUtilsTable->GetAllRows<FIKUtilsStruct>(TEXT("IKUtils"), IKUtilsArray);
@@ -332,6 +363,9 @@ void UInverseKinematicsComponent::InitIKUtilsParams(UPARAM() UDataTable* IKUtils
 		for (auto JN : Row->JointNames) {
 			IKJoints.Add(JN);
 		}
+		for (auto Jt : Row->JointTypes) {
+			IKJointTypes.Add(Jt);
+		}
 		for (auto JM : Row->JointMultiplierValues) {
 			IKJointMultiplierArray.Add(JM);
 		}
@@ -339,6 +373,7 @@ void UInverseKinematicsComponent::InitIKUtilsParams(UPARAM() UDataTable* IKUtils
 			IKJointBaseValuesArray.Add(JV);
 		}
 		InvertAxes = Row->InvertAxes;
+		OutInvertedAxes = Row->InvertAxes;
 	}
 }
 
@@ -365,7 +400,7 @@ void UInverseKinematicsComponent::InitFromDHParams(UPARAM() UDataTable* DHParams
 	}
 
 	// Initialize Robot arm's kinematic chain
-	RobotArm->Init(NLinks, M_DHParams);
+	RobotArm->Init(NLinks, M_DHParams, IKJointTypes);
 
 	auto TEE_0 = RobotArm->TransformationMatrix();
 	auto EEPose = RobotArm->ForwardKinematics(TEE_0);

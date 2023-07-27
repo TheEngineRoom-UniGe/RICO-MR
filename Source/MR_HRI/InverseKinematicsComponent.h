@@ -34,6 +34,9 @@ public:
 		TArray<FString> JointNames;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		TArray<FString> JointTypes;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		TArray<float> JointMultiplierValues;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -108,6 +111,12 @@ public:
 	// Return link's theta
 	float GetTheta();
 
+	// Utility method to set d value
+	void SetD(float D);
+
+	// Return link's d
+	float GetD();
+
 	// Compute link transformation matrix
 	Eigen::MatrixXf TransformationMatrix();
 
@@ -128,6 +137,8 @@ public:
 	// Variable storing number of links in kinematic chain
 	int NLinks_;
 
+	TArray<FString> JointTypes;
+
 	// Array of Links to represent kinematic chain
 	UPROPERTY(VisibleAnywhere)
 	TArray<ULink*> Links;
@@ -141,8 +152,9 @@ public:
 	/* Initialize RobotArm object with params: 
 		- Number of links in the kinematic chain
 		- Matrix of DH parameters
+		- Array of character specifying joint types ('P' for prismatic, 'R' for revolute)
 	*/
-	void Init(int NLinks, const Eigen::MatrixXf& DHParams);
+	void Init(int NLinks, const Eigen::MatrixXf& DHParams, TArray<FString> JointTypes);
 
 	// Arm transformation matrix
 	Eigen::MatrixXf TransformationMatrix();
@@ -190,6 +202,7 @@ public:
 	TArray<FString> IKJoints;
 	TArray<float> IKJointMultiplierArray;
 	TArray<float> IKJointBaseValuesArray;
+	TArray<FString> IKJointTypes;
 	bool InvertAxes;
 
 	// Sets default values for this component's properties
@@ -197,7 +210,7 @@ public:
 
 	// Get IK utilities parameters from corresponding table
 	UFUNCTION(BlueprintCallable)
-	void InitIKUtilsParams(UPARAM() UDataTable* IKUtilsTable, int& OutDirection, FVector& OutEEOffset);
+	void InitIKUtilsParams(UPARAM() UDataTable* IKUtilsTable, int& OutDirection, FVector& OutEEOffset, bool& OutInvertedAxes);
 
 	// Get matrix of DH parameters and initialize RobotArm class
 	UFUNCTION(BlueprintCallable)
