@@ -226,6 +226,14 @@ void URobotArm::UpdateJointAngles(const Eigen::VectorXf& JointAnglesDiff)
 			else if (NewTheta < -PI) {
 				NewTheta += 2 * PI;
 			}
+			if (i == 1) {
+				if (NewTheta > PI/2) {
+					NewTheta = PI/2;
+				}
+				else if (NewTheta < -PI/2) {
+					NewTheta = PI/2;
+				}
+			}
 			Link->SetTheta(NewTheta);
 		}
 		else if (this->JointTypes[i] == "P")
@@ -237,7 +245,7 @@ void URobotArm::UpdateJointAngles(const Eigen::VectorXf& JointAnglesDiff)
 			//else if (NewD < 0.0) {
 			//	NewD = 0.0;
 			//}
-			Link->SetD(0.1);
+			//Link->SetD(0.1);
 		}
 		i++;
 	}

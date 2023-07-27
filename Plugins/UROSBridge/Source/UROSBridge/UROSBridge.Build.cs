@@ -27,7 +27,7 @@ public class UROSBridge : ModuleRules
 			{
 				"CoreUObject",
 				"Engine",
-                                "DeveloperSettings",
+                "DeveloperSettings",
 				"Slate",
 				"SlateCore",
 				"Core",
