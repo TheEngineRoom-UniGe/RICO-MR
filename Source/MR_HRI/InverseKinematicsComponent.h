@@ -40,9 +40,6 @@ public:
 		TArray<float> JointMultiplierValues;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		TArray<float> JointBaseValues;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		bool InvertAxes;
 
 	FIKUtilsStruct() {
@@ -92,6 +89,7 @@ protected:
 
 	// Link parameter variables, according to DH convention
 	float Theta_;
+	float BaseTheta_;
 	float Alpha_;
 	float a_;
 	float d_;

@@ -12,6 +12,7 @@ ULink::ULink() {}
 void ULink::SetDHParams(float Theta, float Alpha, float a, float d)
 {
 	this->Theta_ = Theta;
+	this->BaseTheta_ = Theta;
 	this->Alpha_ = Alpha;
 	this->a_ = a;
 	this->d_ = d;
@@ -44,8 +45,8 @@ float ULink::GetD()
 
 Eigen::MatrixXf ULink::TransformationMatrix()
 {
-	float st = FMath::Sin(this->Theta_);
-	float ct = FMath::Cos(this->Theta_);
+	float st = FMath::Sin(this->Theta_ + this->BaseTheta_);
+	float ct = FMath::Cos(this->Theta_ + this->BaseTheta_);
 	float sa = FMath::Sin(this->Alpha_);
 	float ca = FMath::Cos(this->Alpha_);
 
@@ -238,14 +239,16 @@ void URobotArm::UpdateJointAngles(const Eigen::VectorXf& JointAnglesDiff)
 		}
 		else if (this->JointTypes[i] == "P")
 		{
-			//float NewD = Link->GetD() + JointAnglesDiff(i);
-			//if (NewD > 0.3) {
-			//	NewD = 0.3;
-			//}
-			//else if (NewD < 0.0) {
-			//	NewD = 0.0;
-			//}
-			//Link->SetD(0.1);
+			/*float NewD = Link->GetD() + JointAnglesDiff(i);
+			if (NewD > 0.3) {
+				NewD = 0.3;
+			}
+			else if (NewD < 0.0) {
+				NewD = 0.0;
+			}
+			Link->SetD(NewD);
+			*/
+			Link->SetD(0.15);
 		}
 		i++;
 	}
@@ -376,9 +379,6 @@ void UInverseKinematicsComponent::InitIKUtilsParams(UPARAM() UDataTable* IKUtils
 		}
 		for (auto JM : Row->JointMultiplierValues) {
 			IKJointMultiplierArray.Add(JM);
-		}
-		for (auto JV : Row->JointBaseValues) {
-			IKJointBaseValuesArray.Add(JV);
 		}
 		InvertAxes = Row->InvertAxes;
 		OutInvertedAxes = Row->InvertAxes;
@@ -557,7 +557,7 @@ void UInverseKinematicsComponent::SetRobotJointState(UPARAM() ARModel* Robot,
 
 	UE_LOG(LogTemp, Log, TEXT("------"));
 	for (auto IKJoint : IKJoints) {
-		float vi = IKJointMultiplierArray[i] * (IKJointBaseValuesArray[i] + JointValues[i]);
+		float vi = IKJointMultiplierArray[i] * (JointValues[i]);
 		UE_LOG(LogTemp, Log, TEXT("%f"), vi);
 		Robot->GetJoint(IKJoint)->SetJointPosition(vi, &Hit);
 		i++;
