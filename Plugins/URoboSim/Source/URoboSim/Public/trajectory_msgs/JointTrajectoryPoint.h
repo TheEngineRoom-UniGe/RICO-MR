@@ -104,6 +104,26 @@ namespace trajectory_msgs
 			return Result;
 		}
 
+		virtual FString ToString() const override
+		{
+			FString PositionsString = "[ ";
+			for (auto value : Positions)
+				PositionsString += FString::SanitizeFloat(value) + TEXT(", ");
+			PositionsString += " ]";
+
+			FString ZerosString = "[ ";
+			for (auto value : Positions)
+				ZerosString += FString::SanitizeFloat(0.0) + TEXT(", ");
+			ZerosString += " ]";
+
+			return TEXT("JointTrajectoryPoint { positions = ") + PositionsString + ", " +
+				TEXT("velocities = ") + ZerosString + ", " +
+				TEXT("accelerations = ") + ZerosString + ", " +
+				TEXT("effort = ") + ZerosString + ", " +
+				TEXT("time_from_start = ") + TimeFromStart.ToString() +
+				TEXT(" } ");
+		}
+
 		virtual TSharedPtr<FJsonObject> ToJsonObject() const override
 		{
 			TSharedPtr<FJsonObject> Object = MakeShareable<FJsonObject>(new FJsonObject());

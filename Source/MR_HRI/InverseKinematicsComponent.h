@@ -42,6 +42,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		bool InvertAxes;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		TArray<FString> GripperJointNames;
+
 	FIKUtilsStruct() {
 		Direction = 1;
 		EndEffectorOffset = FVector::ZeroVector;
@@ -141,9 +144,6 @@ public:
 	UPROPERTY(VisibleAnywhere)
 	TArray<ULink*> Links;
 
-	// Mutex needed for safe access to links' data
-	std::mutex Mutex;
-
 	// Default Constructor
 	URobotArm();
 
@@ -197,18 +197,25 @@ public:
 	// Reference to RobotArm class
 	UPROPERTY(VisibleAnywhere)
 	URobotArm* RobotArm;
+
 	TArray<FString> IKJoints;
-	TArray<float> IKJointMultiplierArray;
-	TArray<float> IKJointBaseValuesArray;
 	TArray<FString> IKJointTypes;
+	TArray<float> IKJointMultiplierArray;
+
+	TArray<FString> IKJointsGripper;
+	TArray<float> IKJointsGripperValues;
+	
 	bool InvertAxes;
+
+	// Mutex needed for safe access to joint values array
+	std::mutex Mutex;
 
 	// Sets default values for this component's properties
 	UInverseKinematicsComponent();
 
 	// Get IK utilities parameters from corresponding table
 	UFUNCTION(BlueprintCallable)
-	void InitIKUtilsParams(UPARAM() UDataTable* IKUtilsTable, int& OutDirection, FVector& OutEEOffset, bool& OutInvertedAxes);
+	void InitIKUtilsParams(UPARAM() UDataTable* IKUtilsTable, int& OutDirection, FVector& OutEEOffset);
 
 	// Get matrix of DH parameters and initialize RobotArm class
 	UFUNCTION(BlueprintCallable)
@@ -222,5 +229,9 @@ public:
 	// Apply result of IK to target robot model
 	UFUNCTION(BlueprintCallable)
 	void SetRobotJointState(UPARAM() ARModel* Robot, UPARAM() TArray<float> JointValues);
+
+	// Apply result of IK to target robot model
+	UFUNCTION(BlueprintCallable)
+	void GetRobotJointState(UPARAM() ARModel* Robot, TArray<float>& JointValues);
 
 };

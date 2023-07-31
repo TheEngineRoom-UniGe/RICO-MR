@@ -194,9 +194,7 @@ Eigen::MatrixXf URobotArm::ComputeJacobian(const Eigen::Vector3f& EEPosition)
 
 
 void URobotArm::SetJointAngles(const Eigen::VectorXf& JointAngles)
-{
-	//const std::lock_guard<std::mutex> lock(Mutex);
-	
+{	
 	int i = 0;
 	for (auto Link : Links)
 	{
@@ -213,8 +211,6 @@ void URobotArm::SetJointAngles(const Eigen::VectorXf& JointAngles)
 
 void URobotArm::UpdateJointAngles(const Eigen::VectorXf& JointAnglesDiff)
 {
-	//const std::lock_guard<std::mutex> lock(Mutex);
-
 	int i = 0;
 	for (auto Link : Links)
 	{
@@ -257,7 +253,6 @@ void URobotArm::UpdateJointAngles(const Eigen::VectorXf& JointAnglesDiff)
 
 Eigen::VectorXf URobotArm::GetJointAngles()
 {
-	//const std::lock_guard<std::mutex> lock(Mutex);
 	Eigen::VectorXf JointAngles(NLinks_);
 	int i = 0;
 	for (auto Link : Links) {
@@ -361,27 +356,41 @@ Eigen::VectorXf URobotArm::InverseKinematics(const Eigen::VectorXf& DesiredEEPos
 UInverseKinematicsComponent::UInverseKinematicsComponent() {}
 
 
-void UInverseKinematicsComponent::InitIKUtilsParams(UPARAM() UDataTable* IKUtilsTable, int& OutDirection, FVector& OutEEOffset, bool& OutInvertedAxes)
+void UInverseKinematicsComponent::InitIKUtilsParams(UPARAM() UDataTable* IKUtilsTable, int& OutDirection, FVector& OutEEOffset)
 {
 	TArray<FIKUtilsStruct*> IKUtilsArray;
 	IKUtilsTable->GetAllRows<FIKUtilsStruct>(TEXT("IKUtils"), IKUtilsArray);
 	for (auto Row : IKUtilsArray)
 	{
+		// Retrieve forward axis direction
 		OutDirection = Row->Direction;
+		// Retrieve end-effector's offset for proper IK computation...
 		OutEEOffset.X = Row->EndEffectorOffset.X;
 		OutEEOffset.Y = Row->EndEffectorOffset.Y;
 		OutEEOffset.Z = Row->EndEffectorOffset.Z;
+		// Retrieve list of joint names for which IK is computed
 		for (auto JN : Row->JointNames) {
 			IKJoints.Add(JN);
+			IKJointsGripper.Add(JN);
 		}
+		// Retrieve joint types ('P' or 'R')
 		for (auto Jt : Row->JointTypes) {
 			IKJointTypes.Add(Jt);
 		}
+		// Retrive joint multiplier for determining correct rotation (CW or CCW)
 		for (auto JM : Row->JointMultiplierValues) {
 			IKJointMultiplierArray.Add(JM);
 		}
 		InvertAxes = Row->InvertAxes;
-		OutInvertedAxes = Row->InvertAxes;
+		
+		// Retrieve list of joints + gripper joints for kinesthetic teaching
+		for (auto GJ : Row->GripperJointNames) {
+			IKJointsGripper.Add(GJ);
+		}
+		// Initialize array with zero values
+		for (int i = 0; i < IKJointsGripper.Num(); i++) {
+			IKJointsGripperValues.Add(0.0);
+		}
 	}
 }
 
@@ -512,11 +521,6 @@ void UInverseKinematicsComponent::ComputeInverseKinematics(UPARAM() const FVecto
 	}
 	UE_LOG(LogTemp, Log, TEXT("--------"));
 
-	/*Eigen::VectorXf LastJointAngles = RobotArm->GetJointAngles();
-	if (LastJointAngles.size() != RobotArm->NLinks_) {
-		Success = false;
-		return;
-	}*/
 	Eigen::VectorXf TargetJointAnglesVector = RobotArm->InverseKinematics(DesiredEEPose, this->MaxIterations);
 
 	auto TEE_0 = RobotArm->TransformationMatrix();
@@ -527,16 +531,6 @@ void UInverseKinematicsComponent::ComputeInverseKinematics(UPARAM() const FVecto
 	}
 	UE_LOG(LogTemp, Log, TEXT("--------"));
 
-	/*for (int j = 0; j < TargetJointAnglesVector.size(); j++) {
-		if (isnan(TargetJointAnglesVector(j))) {
-			Success = false;
-			RobotArm->SetJointAngles(LastJointAngles);
-			return;
-		}
-		else {
-			TargetJointAngles.Add(TargetJointAnglesVector(j));
-		}
-	}*/
 	for (int j = 0; j < TargetJointAnglesVector.size(); j++) {
 		TargetJointAngles.Add(TargetJointAnglesVector(j));
 	}
@@ -546,21 +540,39 @@ void UInverseKinematicsComponent::ComputeInverseKinematics(UPARAM() const FVecto
 }
 
 
-void UInverseKinematicsComponent::SetRobotJointState(UPARAM() ARModel* Robot, 
-	UPARAM() TArray<float> JointValues)
+void UInverseKinematicsComponent::SetRobotJointState(UPARAM() ARModel* Robot, UPARAM() TArray<float> JointValues)
 {
 	int i = 0;
 	FHitResult Hit;
 
+	// If robot is not nullptr...
 	if (!IsValid(Robot))
 		return;
 
-	UE_LOG(LogTemp, Log, TEXT("------"));
+	// Take semaphore...
+	const std::lock_guard<std::mutex> lock(Mutex);
+
+	// For each joint, determine correct value by multiplying with direction factor (eith 1 or -1)
 	for (auto IKJoint : IKJoints) {
-		float vi = IKJointMultiplierArray[i] * (JointValues[i]);
-		UE_LOG(LogTemp, Log, TEXT("%f"), vi);
-		Robot->GetJoint(IKJoint)->SetJointPosition(vi, &Hit);
+		IKJointsGripperValues[i] = IKJointMultiplierArray[i] * (JointValues[i]);
+		// Apply joint value...
+		Robot->GetJoint(IKJoint)->SetJointPosition(IKJointsGripperValues[i], &Hit);
 		i++;
+	}
+	for (int j = i; j < IKJointsGripperValues.Num(); j++) {
+		IKJointsGripperValues[j] = 0.0;
+	}
+}
+
+
+void UInverseKinematicsComponent::GetRobotJointState(UPARAM() ARModel* Robot, TArray<float>& OutJointValues)
+{
+	// Take semaphore....
+	const std::lock_guard<std::mutex> lock(Mutex);
+
+	// Copy array to output
+	for (auto value : IKJointsGripperValues) {
+		OutJointValues.Add(value);
 	}
 }
 
