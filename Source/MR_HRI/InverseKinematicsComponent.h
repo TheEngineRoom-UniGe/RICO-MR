@@ -45,10 +45,18 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		TArray<FString> GripperJointNames;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		float ClosedGripperValue;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		float OpenGripperValue;
+
 	FIKUtilsStruct() {
 		Direction = 1;
 		EndEffectorOffset = FVector::ZeroVector;
 		InvertAxes = true;
+		ClosedGripperValue = 0.0;
+		OpenGripperValue = 0.0;
 	}
 };
 
@@ -198,15 +206,23 @@ public:
 	UPROPERTY(VisibleAnywhere)
 	URobotArm* RobotArm;
 
+	// Utility arrays for storing joint values and names for IK
 	TArray<FString> IKJoints;
 	TArray<FString> IKJointTypes;
 	TArray<float> IKJointMultiplierArray;
 
-	TArray<FString> IKJointsGripper;
-	TArray<float> IKJointsGripperValues;
-	
+	// Utility for scenarios when XY axes are inverted in the computation of IK
 	bool InvertAxes;
 
+	// Utilities for storing full arrays including arm joints and gripper for KT
+	TArray<FString> IKJointsGripper;
+	TArray<float> IKJointsGripperValues;
+	// Helper array needed to define the open-close gripper state
+	TArray<float> GripperJointValues;
+	// 0 -> gripper closed
+	// 1 -> gripper open
+	int GripperState;
+	
 	// Mutex needed for safe access to joint values array
 	std::mutex Mutex;
 
@@ -233,5 +249,9 @@ public:
 	// Apply result of IK to target robot model
 	UFUNCTION(BlueprintCallable)
 	void GetRobotJointState(UPARAM() ARModel* Robot, TArray<float>& JointValues);
+
+	// Change the state of the gripper joint in response to vocal command
+	UFUNCTION(BlueprintCallable)
+	void SetGripperState(UPARAM() int NewState);
 
 };

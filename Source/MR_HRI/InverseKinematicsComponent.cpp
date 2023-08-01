@@ -244,6 +244,7 @@ void URobotArm::UpdateJointAngles(const Eigen::VectorXf& JointAnglesDiff)
 			}
 			Link->SetD(NewD);
 			*/
+			// Fixed torso link to TIAGO robot ----> TODO
 			Link->SetD(0.15);
 		}
 		i++;
@@ -353,7 +354,9 @@ Eigen::VectorXf URobotArm::InverseKinematics(const Eigen::VectorXf& DesiredEEPos
 
 // ----------------------
 
-UInverseKinematicsComponent::UInverseKinematicsComponent() {}
+UInverseKinematicsComponent::UInverseKinematicsComponent():
+	GripperState(0)
+{}
 
 
 void UInverseKinematicsComponent::InitIKUtilsParams(UPARAM() UDataTable* IKUtilsTable, int& OutDirection, FVector& OutEEOffset)
@@ -391,6 +394,9 @@ void UInverseKinematicsComponent::InitIKUtilsParams(UPARAM() UDataTable* IKUtils
 		for (int i = 0; i < IKJointsGripper.Num(); i++) {
 			IKJointsGripperValues.Add(0.0);
 		}
+		// Initialize values for gripper joint state
+		GripperJointValues.Add(Row->ClosedGripperValue);
+		GripperJointValues.Add(Row->OpenGripperValue);
 	}
 }
 
@@ -560,7 +566,8 @@ void UInverseKinematicsComponent::SetRobotJointState(UPARAM() ARModel* Robot, UP
 		i++;
 	}
 	for (int j = i; j < IKJointsGripperValues.Num(); j++) {
-		IKJointsGripperValues[j] = 0.0;
+		IKJointsGripperValues[j] = GripperJointValues[this->GripperState];
+		Robot->GetJoint(IKJointsGripper[j])->SetJointPosition(IKJointsGripperValues[j], &Hit);
 	}
 }
 
@@ -574,5 +581,11 @@ void UInverseKinematicsComponent::GetRobotJointState(UPARAM() ARModel* Robot, TA
 	for (auto value : IKJointsGripperValues) {
 		OutJointValues.Add(value);
 	}
+}
+
+
+void UInverseKinematicsComponent::SetGripperState(UPARAM() int NewState)
+{
+	this->GripperState = NewState;
 }
 

@@ -22,5 +22,6 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void PublishJoints(UPARAM() FString Topic, UPARAM() TArray<float> JointValues);
 
-		
+	//UFUNCTION(BlueprintCallable)
+	//void SetGripperState(UPARAM() int& NewState);
 };
