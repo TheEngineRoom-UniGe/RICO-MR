@@ -37,6 +37,15 @@ public:
 		TArray<FString> JointTypes;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		TArray<bool> JointConstaintedFlags;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		TArray<float> JointLowerLimits;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		TArray<float> JointUpperLimits;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		TArray<float> JointMultiplierValues;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -146,11 +155,14 @@ public:
 	// Variable storing number of links in kinematic chain
 	int NLinks_;
 
-	TArray<FString> JointTypes;
-
 	// Array of Links to represent kinematic chain
 	UPROPERTY(VisibleAnywhere)
 	TArray<ULink*> Links;
+
+	TArray<FString> JointTypes_;
+	TArray<float> JointLowLimits_;
+	TArray<float> JointUpLimits_;
+	TArray<bool> JointConstraintedFlags_;
 
 	// Default Constructor
 	URobotArm();
@@ -159,8 +171,10 @@ public:
 		- Number of links in the kinematic chain
 		- Matrix of DH parameters
 		- Array of character specifying joint types ('P' for prismatic, 'R' for revolute)
+		- Arrays of joint limits
 	*/
-	void Init(int NLinks, const Eigen::MatrixXf& DHParams, TArray<FString> JointTypes);
+	void Init(int NLinks, const Eigen::MatrixXf& DHParams, TArray<FString> JointTypes, TArray<bool> JointConstraintedFlags,
+		TArray<float> JointLowLimits, TArray<float> JointUpLimits);
 
 	// Arm transformation matrix
 	Eigen::MatrixXf TransformationMatrix();
@@ -209,6 +223,9 @@ public:
 	// Utility arrays for storing joint values and names for IK
 	TArray<FString> IKJoints;
 	TArray<FString> IKJointTypes;
+	TArray<bool> IKJointConstraintedFlags;
+	TArray<float> IKJointLowLimits;
+	TArray<float> IKJointUpLimits;
 	TArray<float> IKJointMultiplierArray;
 
 	// Utility for scenarios when XY axes are inverted in the computation of IK

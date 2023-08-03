@@ -91,7 +91,8 @@ Eigen::VectorXf ULink::BasicJacobian(const Eigen::MatrixXf& PreviousTransform, c
 URobotArm::URobotArm() {}
 
 
-void URobotArm::Init(int NLinks, const Eigen::MatrixXf& DHParams, TArray<FString> JointTypesArray)
+void URobotArm::Init(int NLinks, const Eigen::MatrixXf& DHParams, TArray<FString> JointTypesArray, 
+	TArray<bool> JointConstraintedFlags, TArray<float> JointLowerLimits, TArray<float> JointUpperLimits)
 {
 	NLinks_ = NLinks;
 	for (int i = 0; i < NLinks_; i++) 
@@ -107,7 +108,16 @@ void URobotArm::Init(int NLinks, const Eigen::MatrixXf& DHParams, TArray<FString
 	}
 
 	for (auto Jt : JointTypesArray) {
-		JointTypes.Add(Jt);
+		JointTypes_.Add(Jt);
+	}
+	for (auto Jc : JointConstraintedFlags) {
+		JointConstraintedFlags_.Add(Jc);
+	}
+	for (auto Jl : JointLowerLimits) {
+		JointLowLimits_.Add(Jl);
+	}
+	for (auto Ju : JointUpperLimits) {
+		JointUpLimits_.Add(Ju);
 	}
 }
 
@@ -214,38 +224,32 @@ void URobotArm::UpdateJointAngles(const Eigen::VectorXf& JointAnglesDiff)
 	int i = 0;
 	for (auto Link : Links)
 	{
-		if (this->JointTypes[i] == "R")
+		if (JointTypes_[i] == "R")
 		{
 			float NewTheta = Link->GetTheta() + JointAnglesDiff(i);
-			if (NewTheta > PI) {
-				NewTheta -= 2 * PI;
-			}
-			else if (NewTheta < -PI) {
-				NewTheta += 2 * PI;
-			}
-			if (i == 1) {
-				if (NewTheta > PI/2) {
-					NewTheta = PI/2;
+			// Joint is constrainted by limits...
+			if (JointConstraintedFlags_[i]) {
+				if (NewTheta > JointUpLimits_[i]) {
+					NewTheta = JointUpLimits_[i];
 				}
-				else if (NewTheta < -PI/2) {
-					NewTheta = PI/2;
+				else if (NewTheta < JointLowLimits_[i]) {
+					NewTheta = JointLowLimits_[i];
+				}
+			}
+			else {
+				if (NewTheta > PI) {
+					NewTheta -= 2 * PI;
+				}
+				else if (NewTheta < -PI) {
+					NewTheta += 2 * PI;
 				}
 			}
 			Link->SetTheta(NewTheta);
 		}
-		else if (this->JointTypes[i] == "P")
+		else if (JointTypes_[i] == "P")
 		{
-			/*float NewD = Link->GetD() + JointAnglesDiff(i);
-			if (NewD > 0.3) {
-				NewD = 0.3;
-			}
-			else if (NewD < 0.0) {
-				NewD = 0.0;
-			}
-			Link->SetD(NewD);
-			*/
 			// Fixed torso link to TIAGO robot ----> TODO
-			Link->SetD(0.15);
+			Link->SetD((JointUpLimits_[i] + JointLowLimits_[i])/2);
 		}
 		i++;
 	}
@@ -339,10 +343,10 @@ Eigen::VectorXf URobotArm::InverseKinematics(const Eigen::VectorXf& DesiredEEPos
 	Eigen::VectorXf TargetJointAngles(NLinks_);
 	int j = 0;
 	for (auto Link : Links) {
-		if (this->JointTypes[j] == "P") {
+		if (JointTypes_[j] == "P") {
 			TargetJointAngles(j) = Link->GetD();
 		}
-		else if (this->JointTypes[j] == "R") {
+		else if (JointTypes_[j] == "R") {
 			TargetJointAngles(j) = Link->GetTheta();
 		}
 		j++;
@@ -380,12 +384,21 @@ void UInverseKinematicsComponent::InitIKUtilsParams(UPARAM() UDataTable* IKUtils
 		for (auto Jt : Row->JointTypes) {
 			IKJointTypes.Add(Jt);
 		}
+		// Retrieve joint limits
+		for (auto Jc : Row->JointConstaintedFlags) {
+			IKJointConstraintedFlags.Add(Jc);
+		}
+		for (auto Jl : Row->JointLowerLimits) {
+			IKJointLowLimits.Add(Jl);
+		}
+		for (auto Ju : Row->JointUpperLimits) {
+			IKJointUpLimits.Add(Ju);
+		}
 		// Retrive joint multiplier for determining correct rotation (CW or CCW)
 		for (auto JM : Row->JointMultiplierValues) {
 			IKJointMultiplierArray.Add(JM);
 		}
 		InvertAxes = Row->InvertAxes;
-		
 		// Retrieve list of joints + gripper joints for kinesthetic teaching
 		for (auto GJ : Row->GripperJointNames) {
 			IKJointsGripper.Add(GJ);
@@ -423,7 +436,7 @@ void UInverseKinematicsComponent::InitFromDHParams(UPARAM() UDataTable* DHParams
 	}
 
 	// Initialize Robot arm's kinematic chain
-	RobotArm->Init(NLinks, M_DHParams, IKJointTypes);
+	RobotArm->Init(NLinks, M_DHParams, IKJointTypes, IKJointConstraintedFlags, IKJointLowLimits, IKJointUpLimits);
 
 	auto TEE_0 = RobotArm->TransformationMatrix();
 	auto EEPose = RobotArm->ForwardKinematics(TEE_0);
