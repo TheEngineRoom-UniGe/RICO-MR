@@ -359,7 +359,7 @@ Eigen::VectorXf URobotArm::InverseKinematics(const Eigen::VectorXf& DesiredEEPos
 // ----------------------
 
 UInverseKinematicsComponent::UInverseKinematicsComponent():
-	GripperState(0)
+	GripperState(1)
 {}
 
 
@@ -410,6 +410,7 @@ void UInverseKinematicsComponent::InitIKUtilsParams(UPARAM() UDataTable* IKUtils
 		// Initialize values for gripper joint state
 		GripperJointValues.Add(Row->ClosedGripperValue);
 		GripperJointValues.Add(Row->OpenGripperValue);
+		GripperHasInvertedValues = Row->GripperHasInvertedValues;
 	}
 }
 
@@ -578,9 +579,13 @@ void UInverseKinematicsComponent::SetRobotJointState(UPARAM() ARModel* Robot, UP
 		Robot->GetJoint(IKJoint)->SetJointPosition(IKJointsGripperValues[i], &Hit);
 		i++;
 	}
+	int k = 1;
 	for (int j = i; j < IKJointsGripperValues.Num(); j++) {
 		IKJointsGripperValues[j] = GripperJointValues[this->GripperState];
-		Robot->GetJoint(IKJointsGripper[j])->SetJointPosition(IKJointsGripperValues[j], &Hit);
+		Robot->GetJoint(IKJointsGripper[j])->SetJointPosition(k * IKJointsGripperValues[j], &Hit);
+		if (GripperHasInvertedValues) {
+			k *= -1;
+		}
 	}
 }
 

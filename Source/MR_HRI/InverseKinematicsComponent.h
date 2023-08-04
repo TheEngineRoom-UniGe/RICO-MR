@@ -60,12 +60,16 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		float OpenGripperValue;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		bool GripperHasInvertedValues;
+
 	FIKUtilsStruct() {
 		Direction = 1;
 		EndEffectorOffset = FVector::ZeroVector;
 		InvertAxes = true;
 		ClosedGripperValue = 0.0;
 		OpenGripperValue = 0.0;
+		GripperHasInvertedValues = false;
 	}
 };
 
@@ -213,7 +217,7 @@ class MR_HRI_API UInverseKinematicsComponent : public UActorComponent
 
 public:
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(VisibleAnywhere)
 	int MaxIterations;
 
 	// Reference to RobotArm class
@@ -236,9 +240,12 @@ public:
 	TArray<float> IKJointsGripperValues;
 	// Helper array needed to define the open-close gripper state
 	TArray<float> GripperJointValues;
+
 	// 0 -> gripper closed
 	// 1 -> gripper open
 	int GripperState;
+
+	bool GripperHasInvertedValues;
 	
 	// Mutex needed for safe access to joint values array
 	std::mutex Mutex;
