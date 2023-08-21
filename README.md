@@ -40,7 +40,7 @@ Inside the seemingly blank screen, the user is presented with two options:
 
 Spawining robot models works through the **QR Code Tracking API** offered by Microsoft's OpenXR plugin. Simply generate a QR marker (you can use this [website](https://www.the-qrcode-generator.com/) to generate free textual codes), print it and place it in the environment. Then, once the user has properly selected the robot model via **Model Selection Menu**, simply look at the QR with the HoloLens's camera and wait until the robot hologram is properly spawned at the marker's estimated location. 
 
-To guarantee support for multi-robot scenarios and avoid ambiguities, make sure to employ a different QR code for any robot hologram you wish to spawn in the Mixed Reality scene. To this extent, make sure to generate as many QR codes with different textual contents (e.g., you can simply fill the first marker's content with *robot1*, the second with *robot2* and so on).
+To guarantee support for multi-robot scenarios and avoid ambiguities, make sure to employ a different QR code for each robot hologram you wish to spawn in the Mixed Reality scene. To this extent, make sure to generate as many QR codes with different textual contents (e.g., you can simply fill the first marker's content with *robot1*, the second with *robot2* and so on).
 
 Additionally, the QR Code parsing feature makes it possible to embed *fixed offsets* inside the marker's textual content. This makes it possible to place QR codes at *conformable* locations (thus with no need for the user to bend on the ground to *look* at the QR and spawn the robot accordingly). To exploit this functionality, simply embed the offset inside the marker's text, after the robot ID, as in the following example:
 
