@@ -12,7 +12,9 @@ We provide both a binary version of the application, which you can immediately d
 
 ### Binary Version
 
-Visit the [release page](https://github.com/TheEngineRoom-UniGe/RICO-MR/releases) and download the most recent release of RICO-MR. In order to deploy the application onto your HoloLens 2 device, simply follow the procedure described in the following [guide](https://learn.microsoft.com/en-us/windows/mixed-reality/develop/unreal/tutorials/unreal-uxt-ch6#packaging-and-deploying-the-app-via-device-portal). Specifically, refer to the paragraph *Packaging and deploying the app via device portal*, and follow the instructions mentioned at steps 6, 7 and 8.
+Visit the [release page](https://github.com/TheEngineRoom-UniGe/RICO-MR/releases) and download the most recent release of RICO-MR. 
+
+In order to deploy the application onto your HoloLens 2 device, simply follow the procedure described in the following [guide](https://learn.microsoft.com/en-us/windows/mixed-reality/develop/unreal/tutorials/unreal-uxt-ch6#packaging-and-deploying-the-app-via-device-portal). Specifically, refer to the paragraph *Packaging and deploying the app via device portal*, and follow the instructions mentioned at steps 6, 7 and 8.
 
 ### Import Project in UE Editor
 
@@ -29,10 +31,10 @@ Upon launching the application, a brief *update* screen is displayed. During thi
 ### Interacting with he Menus
 
 Inside the seemingly blank screen, the user is presented with two options:
-    1. Rotate and gaze at the palm of the *right* hand to pop up the **Model Selection Menu**. This makes it possible to select robot models from a list of avaiable ones. Simply click on the corresponding icon to *select* a new model to spawn (the spawining process is detailed below). The list is initially pre-loaded with four robot models (i.e., *Baxter*, *Tiago++*, *UR10* and *Panda*), but can be extended by simply uploading all the necessary files (see below) in the custom repository.
-    2. Rotate and gaze at the palm of the *left* hand to pop up the **Setting Menu**. Here, users can:
-        1) Customize the links pointing at the remote repository where they upload their own robot files to use inside the application. Upon setting the new URL, on each subsequent startup the application will proceed to scan the repository for updates and will download new resources to be selected via **Model Selection Menu**.
-        2) Set the *publication rate* for the tracking of the HMD's pose, once initial *handshake* is established as discussed in the following paragraph.
+1. Rotate and gaze at the palm of the *right* hand to pop up the **Model Selection Menu**. This makes it possible to select robot models from a list of avaiable ones. Simply click on the corresponding icon to *select* a new model to spawn (the spawining process is detailed below). The list is initially pre-loaded with four robot models (i.e., *Baxter*, *Tiago++*, *UR10* and *Panda*), but can be extended by simply uploading all the necessary files (see below) in the custom repository.
+2. Rotate and gaze at the palm of the *left* hand to pop up the **Setting Menu**. Here, users can:
+    1) Customize the links pointing at the remote repository where they upload their own robot files to use inside the application. Upon setting the new URL, on each subsequent startup the application will proceed to scan the repository for updates and will download new resources to be selected via **Model Selection Menu**.
+    2) Set the *publication rate* for the tracking of the HMD's pose, once initial *handshake* is established as discussed in the following paragraph.
 
 ### Spawining Robot Models
 
