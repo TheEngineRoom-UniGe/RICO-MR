@@ -1,8 +1,8 @@
 # Robot Intent Communication through Mixed Reality (RICO-MR)
 Open-source Unreal Engine 4.27 based project implementing a Mixed Reality layer for enhancing communication in human-robot teams, applicable in a wide variety of interactive tasks.
 The project is built using the following UE plugins:
-    1. [Microsoft OpenXR](https://github.com/microsoft/Microsoft-OpenXR-Unreal)
-    2. [Mixed Reality UX Tools](https://www.unrealengine.com/marketplace/en-US/product/mixed-reality-ux-tools)
+        1. [Microsoft OpenXR](https://github.com/microsoft/Microsoft-OpenXR-Unreal)
+        2. [Mixed Reality UX Tools](https://www.unrealengine.com/marketplace/en-US/product/mixed-reality-ux-tools)
 and targets the **Microsoft HoloLens 2** Mixed Reality headsets.
 
 We provide both a binary version of the application, which you can immediately deploy on your devices to start experimenting in different scenarios, or a complete walkthrough on how to import the project in the UE editor if you wish to customize and expand certain functionalities.
