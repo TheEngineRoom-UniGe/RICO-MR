@@ -20,7 +20,7 @@ In order to deploy the application onto your HoloLens 2 device, simply follow th
 
 Before importing the project in UE, make sure to follow the [Introductory Guide](https://learn.microsoft.com/en-us/windows/mixed-reality/develop/unreal/tutorials/unreal-uxt-ch1), which provides step by step instructions on how to setup UE for Mixed Reality development.
 
-Additionally, in order to make sure that packaging the application for HoloLens 2 works successfully, please locate and delete the `libWebSockets` and `OpenSSL` folders, which are located inside the Engine installation path, under `Engine/Source/ThirdParty`. Replace the deleted folders with the ones you find at the following [repository](https://github.com/TheEngineRoom-UniGe/RICO-MR-libWebSockets-OpenSSL).
+Additionally, in order to make sure that packaging the application for HoloLens 2 works successfully, please locate and delete the `libWebSockets`, `OpenSSL` and `Eigen` folders, which are located inside the Engine installation path, under `Engine/Source/ThirdParty`. Replace the deleted folders with the ones you find at the following [repository](https://github.com/TheEngineRoom-UniGe/RICO-MR-plugins).
 
 Finally, clone the repository (make sure to clone recursively to download dependant plugins) in your local machine and compile the Visual Studio solution. 
 
