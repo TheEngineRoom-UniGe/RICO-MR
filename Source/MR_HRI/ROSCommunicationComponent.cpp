@@ -41,7 +41,7 @@ void UROSCommunicationComponent::ConnectToROS(UPARAM() FString ROSIPAddr) {
 
 	UE_LOG(LogTemp, Log, TEXT("[UROSCommunicationComponent::BeginPlay()] Websocket server connected."));
 
-	isConnected = true;
+	isConnected = true;	
 }
 
 
