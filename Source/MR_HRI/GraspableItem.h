@@ -14,6 +14,9 @@ public:
 	UPROPERTY(VisibleAnywhere)
 	UStaticMeshComponent* GraspableMeshComp;
 
+	UPROPERTY(EditAnywhere)
+	FVector TargetLoc;
+
 	// Internal variable used for detecting grasp
 	int OverlapCounter = 0;
 
@@ -23,6 +26,9 @@ public:
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+
+	UFUNCTION(BlueprintCallable)
+		void SetTarget(UPARAM() FVector TLoc);
 
 	// Method invoked whenever actor receives overlap event 
 	UFUNCTION()

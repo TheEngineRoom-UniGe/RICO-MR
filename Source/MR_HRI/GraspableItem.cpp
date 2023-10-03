@@ -25,6 +25,13 @@ void AGraspableItem::BeginPlay()
 	
 }
 
+void AGraspableItem::SetTarget(UPARAM() FVector TLoc)
+{
+	this->TargetLoc.X = TLoc.X;
+	this->TargetLoc.Y = TLoc.Y;
+	this->TargetLoc.Z = TLoc.Z;
+}
+
 void AGraspableItem::OnBeginOverlap(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, 
 	int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult) {
 
@@ -35,6 +42,7 @@ void AGraspableItem::OnBeginOverlap(class UPrimitiveComponent* OverlappedComp, c
 	// If item is grasped...
 	if (this->OverlapCounter == 2) {
 		// Attach item to robot's end-effector
+		GraspableMeshComp->SetEnableGravity(false);
 		this->AttachToComponent(OtherComp, FAttachmentTransformRules(EAttachmentRule::KeepWorld, EAttachmentRule::KeepWorld, EAttachmentRule::KeepRelative, true));
 	}
 }
@@ -49,7 +57,13 @@ void AGraspableItem::OnEndOverlap(class UPrimitiveComponent* OverlappedComp, cla
 		// Detach item from robot's end-effector
 		this->DetachFromActor(FDetachmentTransformRules(EDetachmentRule::KeepWorld, EDetachmentRule::KeepWorld, EDetachmentRule::KeepRelative, false));
 		// Reset item's physics simulation
-		GraspableMeshComp->SetSimulatePhysics(true);
+		//GraspableMeshComp->SetSimulatePhysics(true);
+		auto ThisLoc = GetActorLocation();
+		if (FMath::Abs(ThisLoc.X - TargetLoc.X) < 15.0 && FMath::Abs(ThisLoc.Y - TargetLoc.Y) < 15.0) {
+			GraspableMeshComp->SetWorldRotation(FQuat::MakeFromEuler(FVector::ZeroVector));
+			GraspableMeshComp->SetSimulatePhysics(true);
+			GraspableMeshComp->SetEnableGravity(true);
+		}
 	}
 }
 

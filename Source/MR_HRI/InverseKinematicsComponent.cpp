@@ -249,7 +249,7 @@ void URobotArm::UpdateJointAngles(const Eigen::VectorXf& JointAnglesDiff)
 		else if (JointTypes_[i] == "P")
 		{
 			// Fixed torso link to TIAGO robot ----> TODO
-			Link->SetD((JointUpLimits_[i] + JointLowLimits_[i])/2);
+			Link->SetD((JointUpLimits_[i] + JointLowLimits_[i])*0.5);
 		}
 		i++;
 	}
