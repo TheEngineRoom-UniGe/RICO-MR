@@ -6,19 +6,28 @@ ULocationPublisherComponent::ULocationPublisherComponent()
 	
 }
 
-void ULocationPublisherComponent::PublishLocation(UPARAM() FString Topic, UPARAM() FVector Offset)
+void ULocationPublisherComponent::PublishLocation(UPARAM() FString Topic, UPARAM() FVector Location, UPARAM() bool UseLocationAsOffset)
 {
-	// Get owner actor's location
-	auto OwnerLoc = GetOwner()->GetActorLocation();
-
-	// Get owner's location wrt robot
-	auto RelativeOwnerLoc = OwnerLoc - Offset;
+	FVector LocationToPublish;
+	if (UseLocationAsOffset)
+	{
+		// Get owner actor's location
+		auto OwnerLoc = GetOwner()->GetActorLocation();
+		// Get owner's location wrt robot
+		LocationToPublish = OwnerLoc - Location;
+	}
+	else 
+	{
+		LocationToPublish.X = Location.X;
+		LocationToPublish.Y = Location.Y;
+		LocationToPublish.Z = Location.Z;
+	}
 
 	// Build point msg 
 	geometry_msgs::Point Point;
-	Point.SetX(RelativeOwnerLoc.X);
-	Point.SetY(RelativeOwnerLoc.Y);
-	Point.SetZ(RelativeOwnerLoc.Z);
+	Point.SetX(LocationToPublish.X);
+	Point.SetY(LocationToPublish.Y);
+	Point.SetZ(LocationToPublish.Z);
 	
 	// Build Kafka producer record based on pose msg
 	FProducerRecord record;
@@ -31,5 +40,4 @@ void ULocationPublisherComponent::PublishLocation(UPARAM() FString Topic, UPARAM
 	TSharedPtr<FEasyKafkaModule> EasyKafka = GEngine->GetEngineSubsystem<UEasyKafkaSubsystem>()->GetEasyKafka();
 	EasyKafka->GetProducer()->ProduceRecord(record);
 }
-
 

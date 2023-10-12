@@ -18,8 +18,8 @@ public:
 	// Sets default values for this component's properties
 	ULocationPublisherComponent();
 
-	// Method used to publish player camera's pose through kafka
+	// Method used to publish object's location in pure world coordinates or expressed wrt robot 
 	UFUNCTION(BlueprintCallable)
-	void PublishLocation(UPARAM() FString Topic, UPARAM() FVector Offset);
-	
+	void PublishLocation(UPARAM() FString Topic, UPARAM() FVector Location, UPARAM() bool UseLocationAsOffset);
+
 };

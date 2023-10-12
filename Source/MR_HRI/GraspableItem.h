@@ -12,10 +12,10 @@ class MR_HRI_API AGraspableItem : public AActor
 	
 public:	
 
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 	UStaticMeshComponent* GraspableMeshComp;
 
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	ULocationPublisherComponent* LocationPublisherComp;
 
 	UPROPERTY(VisibleAnywhere, Category = "Loc Publish")

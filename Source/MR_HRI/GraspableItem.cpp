@@ -23,10 +23,12 @@ void AGraspableItem::BeginPlay()
 {
 	Super::BeginPlay();
 
-	// Add notification for overlapping events
-	GraspableMeshComp->OnComponentBeginOverlap.AddDynamic(this, &AGraspableItem::OnBeginOverlap);
-	GraspableMeshComp->OnComponentEndOverlap.AddDynamic(this, &AGraspableItem::OnEndOverlap);
-	
+	if (bPublishLocation)
+	{
+		// Add notification for overlapping events
+		GraspableMeshComp->OnComponentBeginOverlap.AddDynamic(this, &AGraspableItem::OnBeginOverlap);
+		GraspableMeshComp->OnComponentEndOverlap.AddDynamic(this, &AGraspableItem::OnEndOverlap);
+	}
 }
 
 void AGraspableItem::OnBeginOverlap(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, 
@@ -65,7 +67,7 @@ void AGraspableItem::OnEndOverlap(class UPrimitiveComponent* OverlappedComp, cla
 
 void AGraspableItem::OnTimerElapsed()
 {
-	LocationPublisherComp->PublishLocation(Topic, Offset);
+	LocationPublisherComp->PublishLocation(Topic, Offset, true);
 }
 
 void AGraspableItem::SetOffset(UPARAM() FVector NewOffset)
