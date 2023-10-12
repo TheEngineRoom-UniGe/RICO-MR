@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "Public/LocationPublisherComponent.h"
 #include "GraspableItem.generated.h"
 
 UCLASS()
@@ -13,6 +14,21 @@ public:
 
 	UPROPERTY(VisibleAnywhere)
 	UStaticMeshComponent* GraspableMeshComp;
+
+	UPROPERTY(VisibleAnywhere)
+	ULocationPublisherComponent* LocationPublisherComp;
+
+	UPROPERTY(VisibleAnywhere, Category = "Loc Publish")
+	FVector Offset;
+
+	UPROPERTY(EditAnywhere, Category = "Loc Publish")
+	FString Topic;
+
+	UPROPERTY(EditAnywhere, Category = "Loc Publish")
+	bool bPublishLocation;
+
+	// Timer handle for controlling object's location publish
+	FTimerHandle LocationPublish_TimerHandle;
 
 	// Internal variable used for detecting grasp
 	int OverlapCounter = 0;
@@ -32,5 +48,12 @@ protected:
 	// Method invoked when overlapping ends
 	UFUNCTION()
 	void OnEndOverlap(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+
+	// Callback method to publish object's location on timer elapsed
+	void OnTimerElapsed();
+
+	// Base method to set offset for consistency
+	UFUNCTION(BlueprintCallable)
+	void SetOffset(UPARAM() FVector NewOffset);
 
 };

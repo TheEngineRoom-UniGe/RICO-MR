@@ -14,6 +14,7 @@ public:
 	TArray<trajectory_msgs::JointTrajectoryPoint> trajectoryPoints_;
 	int trajectoryPointIdx_;
 	TArray<double> startingJointConfig_;
+	TArray<double> TempJointConfig_;
 	// Pointer to robot model
 	ARModel* robot_;
 	// Reference to deltaTime
