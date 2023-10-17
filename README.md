@@ -56,6 +56,8 @@ TODO
 
 Apache Kafka is used as main framework to allow RICO to communicate and exchange information with external applications. Kafka integration can be achieved either by running a Kafka server locally or through native cloud platforms (e.g., Confluent). Should you choose the former approach, we provide a [complete walkthrough](https://github.com/TheEngineRoom-UniGe/kafka-docker-compose) to setup a local Kafka server using Docker.
 
+
+
 ## References
 
 If you employ RICO in your research work, please cite us:
