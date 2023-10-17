@@ -31,7 +31,7 @@ Upon launching the application, a brief *update* screen is displayed. During thi
 ### Interacting with he Menus
 
 Inside the seemingly blank screen, the user is presented with two options:
- 1. Rotate and gaze at the palm of the *right* hand to pop up the **Model Selection Menu**. This makes it possible to select robot models from a list of avaiable ones. Simply click on the corresponding icon to *select* a new model to spawn (the spawining process is detailed below). The list is initially pre-loaded with four robot models (i.e., *Baxter*, *Tiago++*, *UR10* and *Panda*), but can be extended by simply uploading all the necessary files (see below) in the custom repository.
+ 1. Rotate and gaze at the palm of the *right* hand to pop up the **Model Selection Menu**. This makes it possible to select robot models from a list of avaiable ones. Simply click on the corresponding icon to *select* a new model to spawn (the spawining process is detailed below). The list is initially pre-loaded with four robot models (i.e., *Baxter*, *Tiago++*, *UR5* and *Panda*), but can be extended by simply uploading all the necessary files (see below) in the custom repository.
  2. Rotate and gaze at the palm of the *left* hand to pop up the **Setting Menu**. Here, users can:
     1) Customize the links pointing at the remote repository where they upload their own robot files to use inside the application. Upon setting the new URL, on each subsequent startup the application will proceed to scan the repository for updates and will download new resources to be selected via **Model Selection Menu**.
     2) Set the *publication rate* for the tracking of the HMD's pose, once initial *handshake* is established as discussed in the following paragraph.
@@ -51,5 +51,22 @@ Here, the robot's hologram with ID *robot1* will be spawned with a fixed offset 
 ### Uploading New Robot Models on the Remote Repository
 
 TODO
+
+### Connecting Kafka
+
+Apache Kafka is used as main framework to allow RICO to communicate and exchange information with external applications. Kafka integration can be achieved either by running a Kafka server locally or through native cloud platforms (e.g., Confluent). Should you choose the former approach, we provide a [complete walkthrough](https://github.com/TheEngineRoom-UniGe/kafka-docker-compose) to setup a local Kafka server using Docker.
+
+## References
+
+If you employ RICO in your research work, please cite us:
+
+@misc{macciò2023ricomr,
+      title={RICO-MR: An Open-Source Architecture for Robot Intent Communication through Mixed Reality}, 
+      author={Simone Macciò and Mohamad Shaaban and Alessandro Carfì and Renato Zaccaria and Fulvio Mastrogiovanni},
+      year={2023},
+      eprint={2309.04765},
+      archivePrefix={arXiv},
+      primaryClass={cs.RO}
+}
 
 
