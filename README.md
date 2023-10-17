@@ -56,10 +56,16 @@ TODO
 
 Apache Kafka is used as main framework to allow RICO to communicate and exchange information with external applications. Kafka integration can be achieved either by running a Kafka server locally or through native cloud platforms (e.g., Confluent). 
 
-Should you choose the former approach, we provide a [complete walkthrough](https://github.com/TheEngineRoom-UniGe/kafka-docker-compose) to setup a local Kafka server using Docker. Once the local Kafka server is up and running in Docker, open the Unreal project, locate the asset *KafkaConnectionParams* (under */Game/DataAssets* folder) and modify the entries to accomodate the Kafka Broker address, along with the username and password credentials for secure connection, similarly to the following screenshot:
+Should you choose the former approach, we provide a [complete walkthrough](https://github.com/TheEngineRoom-UniGe/kafka-docker-compose) to setup a local Kafka server using Docker. 
+Once the local Kafka server is up and running in Docker, open the Unreal project, locate the asset *KafkaConnectionParams* (under */Game/DataAssets* folder) and modify the entries to accomodate the Kafka Broker address, along with the username and password credentials for secure connection, similarly to the following screenshot:
 
 ![https://assets.digitalocean.com/articles/alligator/boo.svg "a title"](https://github.com/TheEngineRoom-UniGe/RICO-MR/blob/irim-demo/Images/KafkaConnectionParams.png)
 
+For further information about Kafka and the topics exposed by RICO at runtime to interact with robot holograms, please refer to the [accompanying article](https://arxiv.org/abs/2309.04765).
+
+### ROS-Kafka Interface
+
+ROS applications can be easily interfaced with Kafka through the corresponding [C++](https://github.com/mfontanini/cppkafka) or [Python](https://github.com/confluentinc/confluent-kafka-python) APIs. In this repository, we showcase a ROS package where Python scripts provide motion planning capabilities (through *MoveIt* library) and interface with RICO through Kafka Python bindings. 
 
 ## References
 
