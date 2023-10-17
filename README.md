@@ -60,6 +60,7 @@ Apache Kafka is used as main framework to allow RICO to communicate and exchange
 
 If you employ RICO in your research work, please cite us:
 
+```
 @misc{macciò2023ricomr,
       title={RICO-MR: An Open-Source Architecture for Robot Intent Communication through Mixed Reality}, 
       author={Simone Macciò and Mohamad Shaaban and Alessandro Carfì and Renato Zaccaria and Fulvio Mastrogiovanni},
@@ -68,5 +69,6 @@ If you employ RICO in your research work, please cite us:
       archivePrefix={arXiv},
       primaryClass={cs.RO}
 }
+```
 
 
