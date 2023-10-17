@@ -65,7 +65,7 @@ For further information about Kafka and the topics exposed by RICO at runtime to
 
 ### ROS-Kafka Interface
 
-ROS applications can be easily interfaced with Kafka through the corresponding [C++](https://github.com/mfontanini/cppkafka) or [Python](https://github.com/confluentinc/confluent-kafka-python) APIs. In this repository, we showcase a ROS package where Python scripts provide motion planning capabilities (through *MoveIt* library) and interface with RICO through Kafka Python bindings. 
+ROS applications can be easily interfaced with Kafka through the corresponding [C++](https://github.com/mfontanini/cppkafka) or [Python](https://github.com/confluentinc/confluent-kafka-python) APIs. In this [repository](https://github.com/TheEngineRoom-UniGe/ros-kafka-demo), we showcase a ROS package where Python scripts provide motion planning capabilities (through *MoveIt* library) and interface with RICO through Kafka Python bindings. 
 
 ## References
 
