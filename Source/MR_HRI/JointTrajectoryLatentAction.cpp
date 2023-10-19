@@ -34,7 +34,10 @@ void JointTrajectoryLatentAction::UpdateOperation(FLatentResponse& Response) {
 		for (double jointPosition : trajectoryPoints_[trajectoryPointIdx_].GetPositions()) {
 			double nextJointPositionStep = startingJointConfig_[jointIdx] + 
 				1.0 / (double) maxSteps_ * ( jointPosition - startingJointConfig_[jointIdx]) * (double) stepsCount_;
-			robot_->GetJoint(jointNames_[jointIdx])->SetJointPosition(nextJointPositionStep, &hit);
+			URJoint* JointTemp =  robot_->GetJoint(jointNames_[jointIdx]);
+			if (IsValid(JointTemp))
+				JointTemp->SetJointPosition(nextJointPositionStep, &hit);
+
 			TempJointConfig_[jointIdx] = nextJointPositionStep;
 			jointIdx++;
 			

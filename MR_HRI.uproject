@@ -55,6 +55,11 @@
 				"IOS",
 				"TVOS"
 			]
+		},
+		{
+			"Name": "DSSLite",
+			"Enabled": true,
+			"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/product/829f1f18f7174f23a71d9fc66c629ca2"
 		}
 	]
 }

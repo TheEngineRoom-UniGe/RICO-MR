@@ -1,0 +1,36 @@
+{
+	"FileVersion": 3,
+	"Version": 2,
+	"VersionName": "001A",
+	"FriendlyName": "DSSLite",
+	"Description": "DSSLiteV2 plugin helps in scaling up your game's maximum number of players, by dynamically spinning, terminating and restarting UE4 servers in order to hold all the players simultaneously. Benefiting from latest cloud's technology.",
+	"Category": "Other",
+	"CreatedBy": "Dynamic Servers Systems",
+	"CreatedByURL": "https://discord.com/invite/MtGpAdM",
+	"DocsURL": "https://github.com/sha3sha3/UE-DSSPlugin/blob/master/README.md",
+	"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/product/829f1f18f7174f23a71d9fc66c629ca2",
+	"SupportURL": "",
+	"CanContainContent": true,
+	"IsBetaVersion": false,
+	"IsExperimentalVersion": false,
+	"Installed": true,
+	"Modules": [
+		{
+			"Name": "DSSLite",
+			"Type": "Runtime",
+			"LoadingPhase": "PreLoadingScreen",
+			"PlatformAllowList": [
+				"Win64",
+				"Linux",
+				"LinuxArm64",
+				"Android"
+			],
+			"WhitelistPlatforms": [
+				"Win64",
+				"Linux",
+				"LinuxAArch64",
+				"Android"
+			]
+		}
+	]
+}
