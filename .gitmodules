@@ -4,3 +4,6 @@
 [submodule "Plugins/OpenSSL-Hololens"]
 	path = Plugins/OpenSSL-Hololens
 	url = https://github.com/sha3sha3/UE-OpenSSL-Hololens.git
+[submodule "Packaging/UE-LibWebSocketLens"]
+	path = Packaging/UE-LibWebSocketLens
+	url = https://github.com/sha3sha3/UE-LibWebSocketLens.git
