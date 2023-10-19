@@ -20,7 +20,7 @@ public class MR_HRI : ModuleRules
 			"UROSBridge",
 			"Json",
             "JsonUtilities",
-			"Eigen"
+			//"Eigen"
 			//"OpenSSL"
 		});
 
@@ -37,9 +37,9 @@ public class MR_HRI : ModuleRules
             "PakFile"
         });
 
-        AddEngineThirdPartyPrivateStaticDependencies(Target,
-			"Eigen"
-		);
+        //AddEngineThirdPartyPrivateStaticDependencies(Target,
+			//"Eigen"
+		//);
 
         // Uncomment if you are using Slate UI
         // PrivateDependencyModuleNames.AddRange(new string[] { "Slate", "SlateCore" });
